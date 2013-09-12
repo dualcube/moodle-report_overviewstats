@@ -1,0 +1,13 @@
+{
+    "name": "moodle-report_overviewstats-charts",
+    "builds": {
+        "moodle-report_overviewstats-charts": {
+            "jsfiles": [
+                "countries.js",
+                "enrolments.js",
+                "langs.js",
+                "modules.js"
+            ]
+        }
+    }
+}

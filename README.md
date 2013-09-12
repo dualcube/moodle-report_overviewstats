@@ -1,4 +1,4 @@
-moodle-report_overviewstats
-===========================
+Moodle: Overview statistics report
+==================================
 
-Moodle add-on producing various site and course reports
+This Moodle add-on produces various site and course reports/charts.
