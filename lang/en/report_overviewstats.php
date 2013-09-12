@@ -37,3 +37,4 @@ $string['chart-modules-instances'] = 'Number of module instances';
 $string['chart-modules-usage'] = 'Activity modules usage';
 $string['chart-modules-usage-glentries'] = 'Glossary entries';
 $string['chart-modules-usage-posts'] = 'Forum posts';
+$string['overviewstats:view'] = 'View overview statistics';
