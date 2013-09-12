@@ -77,7 +77,7 @@ class report_overviewstats_chart_countries extends report_overviewstats_chart {
               ORDER BY COUNT(*) DESC, country ASC";
 
         $data = array();
-        foreach ($DB->get_records_sql_menu($sql, null, 0, 10) as $country => $count) {
+        foreach ($DB->get_records_sql_menu($sql) as $country => $count) {
             if (get_string_manager()->string_exists($country, 'core_countries')) {
                 $countryname = get_string($country, 'core_countries');
             } else {
