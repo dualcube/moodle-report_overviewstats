@@ -39,7 +39,6 @@ class report_overviewstats_manager {
             new report_overviewstats_chart_logins(),
             new report_overviewstats_chart_countries(),
             new report_overviewstats_chart_langs(),
-            new report_overviewstats_chart_modules(),
         );
 
         return $list;
@@ -55,7 +54,6 @@ class report_overviewstats_manager {
 
         $list = array(
             new report_overviewstats_chart_enrolments($course),
-            new report_overviewstats_chart_modules($course),
         );
 
         return $list;
