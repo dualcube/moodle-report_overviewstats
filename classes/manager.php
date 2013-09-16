@@ -39,6 +39,7 @@ class report_overviewstats_manager {
             new report_overviewstats_chart_logins(),
             new report_overviewstats_chart_countries(),
             new report_overviewstats_chart_langs(),
+            new report_overviewstats_chart_courses(),
         );
 
         return $list;

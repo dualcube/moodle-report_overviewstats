@@ -49,11 +49,11 @@ class report_overviewstats_renderer extends plugin_renderer_base {
                 $counter++;
                 $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_'.$counter, s($title)));
                 $outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_'.$counter));
-                $outbody .= $this->output->heading(format_string($title), 2);
+                $outbody .= $this->output->heading($title, 2);
                 if (is_array($content)) {
                     foreach ($content as $subtitle => $subcontent) {
                         $outbody .= html_writer::start_div('subchart');
-                        $outbody .= $this->output->heading(format_string($subtitle), 3);
+                        $outbody .= $this->output->heading($subtitle, 3);
                         $outbody .= $subcontent;
                         $outbody .= html_writer::end_div();
                     }
