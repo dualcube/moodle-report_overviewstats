@@ -6,6 +6,7 @@
                 "countries.js",
                 "enrolments.js",
                 "langs.js",
+                "logins.js",
                 "modules.js"
             ]
         }

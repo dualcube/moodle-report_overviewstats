@@ -36,6 +36,7 @@ class report_overviewstats_manager {
     public static function get_site_charts() {
 
         $list = array(
+            new report_overviewstats_chart_logins(),
             new report_overviewstats_chart_countries(),
             new report_overviewstats_chart_langs(),
             new report_overviewstats_chart_modules(),
