@@ -2,8 +2,8 @@ Moodle: Overview statistics report
 ==================================
 
 This [Moodle](http://moodle.org) add-on produces various site and course report
-charts.  The code has been designed in a way that enables to add more reports
-easily.
+charts.  The code has been designed in a way that makes adding more reports
+easy.
 
 For producing the graphs, [YUI Charts](http://yuilibrary.com/yui/docs/charts/)
 module is used.  The code is using modern Moodle development techniques and
