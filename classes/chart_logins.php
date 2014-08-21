@@ -67,7 +67,7 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
      * Prepares data to report
      */
     protected function prepare_data() {
-        global $DB;
+        global $DB, $CFG;
 
         if (!is_null($this->data)) {
             return;
@@ -75,31 +75,50 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
 
         $now = strtotime('today midnight');
 
-        $sql = "SELECT time, userid
-                  FROM {log}
-                 WHERE time >= :timestart
-                   AND action = 'login'";
-
-        $params = array('timestart' => $now - 30 * DAYSECS);
-
-        $rs = $DB->get_recordset_sql($sql, $params);
-
         $lastmonth = array();
         for ($i = 30; $i >= 0; $i--) {
             $lastmonth[$now - $i * DAYSECS] = array();
         }
 
-        foreach ($rs as $record) {
-            foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                $date = usergetdate($timestamp);
-                if ($record->time >= $timestamp) {
-                    $lastmonth[$timestamp][$record->userid] = true;
-                    break;
+        if ($CFG->version > 2014051200) { // Moodle 2.7+
+            $logmanger = get_log_manager();
+            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            $reader = reset($readers);
+            $params = array('component' => 'core', 'eventname' => '\core\event\user_loggedin', 'timestart' => $now - 30 * DAYSECS);
+            $select = "component = :component AND eventname = :eventname AND timecreated >= :timestart";
+            $rs = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+
+            foreach ($rs as $record) {
+                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
+                    $date = usergetdate($timestamp);
+                    if ($record->timecreated >= $timestamp) {
+                        $lastmonth[$timestamp][$record->userid] = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        $rs->close();
+        }else{
+            $sql = "SELECT time, userid
+                      FROM {log}
+                     WHERE time >= :timestart
+                       AND action = 'login'";
+
+            $params = array('timestart' => $now - 30 * DAYSECS);
+
+            $rs = $DB->get_recordset_sql($sql, $params);
+
+            foreach ($rs as $record) {
+                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
+                    $date = usergetdate($timestamp);
+                    if ($record->time >= $timestamp) {
+                        $lastmonth[$timestamp][$record->userid] = true;
+                        break;
+                    }
+                }
+            }
+            $rs->close();
+        }
 
         $this->data = array(
             'perday' => array(),
