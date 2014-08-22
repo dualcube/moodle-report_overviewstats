@@ -13,6 +13,13 @@ M.report_overviewstats.charts.logins = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {

@@ -11,6 +11,13 @@ M.report_overviewstats.charts.langs = {
             type: "bar",
             categoryKey: "language",
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             dataProvider: data
         });
 

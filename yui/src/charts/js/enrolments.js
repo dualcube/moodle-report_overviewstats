@@ -13,6 +13,13 @@ M.report_overviewstats.charts.enrolments = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {
@@ -34,6 +41,13 @@ M.report_overviewstats.charts.enrolments = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {

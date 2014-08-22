@@ -11,6 +11,13 @@ M.report_overviewstats.charts.countries = {
     init: function(data) {
         var chart = new Y.Chart({
             type: "bar",
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             categoryKey: "country",
             verticalGridlines: true,
             dataProvider: data
@@ -34,6 +41,13 @@ M.report_overviewstats.charts.courses = {
             categoryKey: "course_size",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             dataProvider: data.sizes
         });
 
@@ -56,6 +70,13 @@ M.report_overviewstats.charts.enrolments = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {
@@ -77,6 +98,13 @@ M.report_overviewstats.charts.enrolments = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {
@@ -106,6 +134,13 @@ M.report_overviewstats.charts.langs = {
             type: "bar",
             categoryKey: "language",
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             dataProvider: data
         });
 
@@ -128,6 +163,13 @@ M.report_overviewstats.charts.logins = {
             categoryKey: "date",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             styles: {
                 axes: {
                     date: {

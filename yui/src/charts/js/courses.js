@@ -12,6 +12,13 @@ M.report_overviewstats.charts.courses = {
             categoryKey: "course_size",
             horizontalGridlines: true,
             verticalGridlines: true,
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             dataProvider: data.sizes
         });
 

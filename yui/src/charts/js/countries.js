@@ -9,6 +9,13 @@ M.report_overviewstats.charts.countries = {
     init: function(data) {
         var chart = new Y.Chart({
             type: "bar",
+            axes: {
+                values: {
+                    labelFormat: {
+                        decimalPlaces: 1
+                    }
+                }
+            },
             categoryKey: "country",
             verticalGridlines: true,
             dataProvider: data
