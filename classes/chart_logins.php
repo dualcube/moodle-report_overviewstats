@@ -80,7 +80,7 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
             $lastmonth[$now - $i * DAYSECS] = array();
         }
 
-        if ($CFG->version > 2014051200) { // Moodle 2.7+
+        if ($CFG->version >= 2014051200) { // Moodle 2.7 and higher
             $logmanger = get_log_manager();
             $readers = $logmanger->get_readers('\core\log\sql_select_reader');
             $reader = reset($readers);
@@ -98,7 +98,7 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
                 }
             }
 
-        }else{
+        } else {
             $sql = "SELECT time, userid
                       FROM {log}
                      WHERE time >= :timestart

@@ -88,7 +88,7 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
      * the enrolment duration, status etc) but gives at least something.
      */
     protected function prepare_data() {
-        global $DB;
+        global $DB, $CFG;
 
         if (is_null($this->course)) {
             throw new coding_exception('Course level report invoked without the reference to the course!');
@@ -109,25 +109,10 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
 
         $this->current = $DB->count_records_sql($sql, $params);
 
-        // Fetch all the enrol/unrol log entries from the last year
-
-        $now = time();
-
-        $sql = "SELECT time, action
-                  FROM {log}
-                 WHERE time >= :timestart
-                   AND course = :courseid
-                   AND (action = 'enrol' OR action = 'unenrol')";
-
-        $params = array(
-            'timestart' => $now - YEARSECS,
-            'courseid' => $this->course->id,
-        );
-
-        $rs = $DB->get_recordset_sql($sql, $params);
-
         // Construct the estimated number of enrolled users in the last month
         // and the last year using the current number and the log records.
+
+        $now = time();
 
         $lastmonth = array();
         for ($i = 30; $i >= 0; $i--) {
@@ -139,40 +124,104 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
             $lastyear[$now - $i * 30 * DAYSECS] = $this->current;
         }
 
-        foreach ($rs as $record) {
-            foreach (array_reverse($lastmonth, true) as $key => $value) {
-                if ($record->time >= $key) {
-                    // We need to amend all days up to the key.
-                    foreach ($lastmonth as $mkey => $mvalue) {
-                        if ($mkey <= $key) {
-                            if ($record->action === 'enrol' and $lastmonth[$mkey] > 0) {
-                                $lastmonth[$mkey]--;
-                            } else if ($record->action === 'unenrol') {
-                                $lastmonth[$mkey]++;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-            foreach (array_reverse($lastyear, true) as $key => $value) {
-                if ($record->time >= $key) {
-                    // We need to amend all months up to the key.
-                    foreach ($lastyear as $ykey => $yvalue) {
-                        if ($ykey <= $key) {
-                            if ($record->action === 'enrol' and $lastyear[$ykey] > 0) {
-                                $lastyear[$ykey]--;
-                            } else if ($record->action === 'unenrol') {
-                                $lastyear[$ykey]++;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
-        }
+        // Fetch all the enrol/unrol log entries from the last year
 
-        $rs->close();
+        if ($CFG->version >= 2014051200) { // Moodle 2.7 and higher
+
+            $logmanger = get_log_manager();
+            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            $reader = reset($readers);
+            $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) AND timecreated >= :timestart";
+            $params = array(
+                'component' => 'core',
+                'eventname1' => '\core\event\user_enrolment_created',
+                'eventname2' => '\core\event\user_enrolment_deleted',
+                'timestart' => $now - 30 * DAYSECS
+            );
+            $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+
+            foreach ($events as $event) {
+                foreach (array_reverse($lastmonth, true) as $key => $value) {
+                    if ($event->timecreated >= $key) {
+                        // We need to amend all days up to the key.
+                        foreach ($lastmonth as $mkey => $mvalue) {
+                            if ($mkey <= $key) {
+                                if ($event->eventname === '\core\event\user_enrolment_created' and $lastmonth[$mkey] > 0) {
+                                    $lastmonth[$mkey]--;
+                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                                    $lastmonth[$mkey]++;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                foreach (array_reverse($lastyear, true) as $key => $value) {
+                    if ($event->timecreated >= $key) {
+                        // We need to amend all months up to the key.
+                        foreach ($lastyear as $ykey => $yvalue) {
+                            if ($ykey <= $key) {
+                                if ($event->eventname === '\core\event\user_enrolment_created' and $lastyear[$ykey] > 0) {
+                                    $lastyear[$ykey]--;
+                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                                    $lastyear[$ykey]++;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+        } else {
+            $sql = "SELECT time, action
+                      FROM {log}
+                     WHERE time >= :timestart
+                       AND course = :courseid
+                       AND (action = 'enrol' OR action = 'unenrol')";
+
+            $params = array(
+                'timestart' => $now - YEARSECS,
+                'courseid' => $this->course->id,
+            );
+
+            $rs = $DB->get_recordset_sql($sql, $params);
+
+            foreach ($rs as $record) {
+                foreach (array_reverse($lastmonth, true) as $key => $value) {
+                    if ($record->time >= $key) {
+                        // We need to amend all days up to the key.
+                        foreach ($lastmonth as $mkey => $mvalue) {
+                            if ($mkey <= $key) {
+                                if ($record->action === 'enrol' and $lastmonth[$mkey] > 0) {
+                                    $lastmonth[$mkey]--;
+                                } else if ($record->action === 'unenrol') {
+                                    $lastmonth[$mkey]++;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                foreach (array_reverse($lastyear, true) as $key => $value) {
+                    if ($record->time >= $key) {
+                        // We need to amend all months up to the key.
+                        foreach ($lastyear as $ykey => $yvalue) {
+                            if ($ykey <= $key) {
+                                if ($record->action === 'enrol' and $lastyear[$ykey] > 0) {
+                                    $lastyear[$ykey]--;
+                                } else if ($record->action === 'unenrol') {
+                                    $lastyear[$ykey]++;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+
+            $rs->close();
+        }
 
         $this->data = array(
             'lastmonth' => array(),
