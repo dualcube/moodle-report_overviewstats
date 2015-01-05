@@ -105,9 +105,10 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
             $sql = "SELECT time, userid
                       FROM {log}
                      WHERE time >= :timestart
+                       AND userid <> :guestid
                        AND action = 'login'";
 
-            $params = array('timestart' => $now - 30 * DAYSECS);
+            $params = array('timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest);
 
             $rs = $DB->get_recordset_sql($sql, $params);
 
