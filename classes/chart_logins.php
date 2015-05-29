@@ -82,7 +82,7 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7 and higher
             $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            $readers = $logmanger->get_readers('\core\log\sql_reader');
             $reader = reset($readers);
             $params = array('component' => 'core',
                             'eventname' => '\core\event\user_loggedin',
