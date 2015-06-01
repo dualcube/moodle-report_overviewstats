@@ -126,10 +126,14 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
 
         // Fetch all the enrol/unrol log entries from the last year
 
-        if ($CFG->version >= 2014051200) { // Moodle 2.7 and higher
+        if ($CFG->branch >= 27) {
 
             $logmanger = get_log_manager();
-            $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            if ($CFG->branch >= 29) {
+                $readers = $logmanger->get_readers('\core\log\sql_reader');
+            } else {
+                $readers = $logmanger->get_readers('\core\log\sql_select_reader');
+            }
             $reader = reset($readers);
             $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) AND timecreated >= :timestart";
             $params = array(
