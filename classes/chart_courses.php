@@ -23,8 +23,6 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/coursecatlib.php');
-
 /**
  * Reports various users related charts and figures
  */
@@ -100,12 +98,12 @@ class report_overviewstats_chart_courses extends report_overviewstats_chart {
 
         // Number of courses per category
 
-        $cats = coursecat::make_categories_list();
+        $cats = core_course_category::make_categories_list();
         $this->data['percategory'] = array();
         $total = 0;
 
         foreach ($cats as $catid => $catname) {
-            $cat = coursecat::get($catid);
+            $cat = core_course_category::get($catid);
             $coursesown = $cat->get_courses_count();
             $total += $coursesown;
             $this->data['percategory'][] = array(
