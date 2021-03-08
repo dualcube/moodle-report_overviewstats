@@ -42,3 +42,4 @@ $string['chart-langs-info'] = 'Number of different languages: {$a}';
 $string['chart-logins'] = 'Users logging in';
 $string['chart-logins-perday'] = 'Per day';
 $string['overviewstats:view'] = 'View overview statistics';
+$string['privacy:metadata'] = 'The Overview statistics plugin does not store any personal data.';
