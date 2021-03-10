@@ -38,5 +38,6 @@ course based on estimated historical figures.
 Author
 ------
 
-The add-on has been written and is currently maintained by David Mudrák
-<david@moodle.com>, [@mudrd8mz](http://twitter.com/mudrd8mz).
+This add-on is currently maintained by [Eric Bram](https://github.com/ericbram).
+
+It was written by David Mudrák <david@moodle.com>, [@mudrd8mz](http://twitter.com/mudrd8mz).
