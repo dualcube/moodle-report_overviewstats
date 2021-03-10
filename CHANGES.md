@@ -1,3 +1,9 @@
+### v1.5 ###
+
+* Fixed issue #12 - Missing privacy provider. Credit goes
+  to @golenkovm for the fix.
+* Confirmed to work in Moodle 3.9 and 3.10.
+
 ### v1.4 ###
 
 * Fixed issue #10 - deprecated class `coursecat` removed from Moodle 3.10. Credit goes
