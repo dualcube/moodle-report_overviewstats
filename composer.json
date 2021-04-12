@@ -1,0 +1,10 @@
+{
+    "name": "ericbram/moodle-report_overviewstats",
+    "type": "moodle-report",
+    "require": {
+        "composer/installers": "~1.0"
+    },
+    "extra": {
+        "installer-name": "overviewstats"
+    }
+}
