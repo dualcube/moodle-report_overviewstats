@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Reports the new enrolments over time
+ * 
  * @package     report_overviewstats
  * @copyright   2013 David Mudrak <david@moodle.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
