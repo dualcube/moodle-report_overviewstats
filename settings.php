@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Contains settings that the user can customize for the plugin
+ * 
  * @package     report_overviewstats
  * @category    admin
  * @copyright   2013 David Mudrak <david@moodle.com>

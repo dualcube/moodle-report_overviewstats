@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Provides a list of strings for the plugin
+ * 
  * @package     report_verviewstats
  * @category    string
  * @copyright   2013 David Mudrak <david@moodle.com>
