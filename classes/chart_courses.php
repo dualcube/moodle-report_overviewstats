@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -96,8 +95,7 @@ class report_overviewstats_chart_courses extends report_overviewstats_chart {
             return;
         }
 
-        // Number of courses per category
-
+        // Number of courses per category.
         $cats = core_course_category::make_categories_list();
         $this->data['percategory'] = array();
         $total = 0;
@@ -119,8 +117,7 @@ class report_overviewstats_chart_courses extends report_overviewstats_chart {
             'coursesown' => html_writer::tag('strong', $total),
         );
 
-        // Distribution graph of number of activities per course
-
+        // Distribution graph of number of activities per course.
         $sql = "SELECT course, COUNT(id) AS modules
                   FROM {course_modules}
               GROUP BY course";

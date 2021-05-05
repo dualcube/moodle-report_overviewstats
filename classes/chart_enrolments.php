@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -124,8 +123,7 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
             $lastyear[$now - $i * 30 * DAYSECS] = $this->current;
         }
 
-        // Fetch all the enrol/unrol log entries from the last year
-
+        // Fetch all the enrol/unrol log entries from the last year.
         if ($CFG->branch >= 27) {
 
             $logmanger = get_log_manager();

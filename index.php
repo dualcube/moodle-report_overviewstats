@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -30,12 +29,12 @@ require_once($CFG->dirroot.'/report/overviewstats/locallib.php');
 $courseid = optional_param('course', null, PARAM_INT);
 
 if (is_null($courseid)) {
-    // Site level reports
+    // Site level reports.
     admin_externalpage_setup('overviewstats', '', null, '', array('pagelayout' => 'report'));
     $charts = report_overviewstats_manager::get_site_charts();
 
 } else {
-    // Course level report
+    // Course level report.
     $course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
     $context = context_course::instance($course->id);
 
