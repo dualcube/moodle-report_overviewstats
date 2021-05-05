@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -25,11 +24,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-// Need to load the base classes first so we can extend them
+// Need to load the base classes first so we can extend them.
 require_once($CFG->dirroot.'/report/overviewstats/classes/chart.php');
 require_once($CFG->dirroot.'/report/overviewstats/classes/manager.php');
 
-// Load all classes files (to be replaced by autoloading in Moodle 2.6
+// Load all classes files (to be replaced by autoloading in Moodle 2.6.
 $classfiles = new DirectoryIterator($CFG->dirroot.'/report/overviewstats/classes/');
 foreach ($classfiles as $classfile) {
     if ($classfile->isDot()) {

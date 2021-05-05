@@ -1,3 +1,9 @@
+### v1.5.1 ###
+
+* Added `composer.json` to facilitate loading Moodle Plugins as dependencies. Credit goes to @michaelmeneses for the addition.
+* Code cleanup to pass more prechecks.
+* Confirmed to work in Moodle 3.10.
+
 ### v1.5 ###
 
 * Fixed issue #12 - Missing privacy provider. Credit goes
