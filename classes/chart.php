@@ -17,8 +17,8 @@
 /**
  * Base class for all charts to be reported
  *
- * @package     report_overviewstats
- * @author 		DualCube <admin@dualcube.com>
+ * @package     report_overviewstats_chart
+ * @author      DualCube <admin@dualcube.com>
  * @copyright  	Dualcube (https://dualcube.com)
  * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -52,18 +52,6 @@ abstract class report_overviewstats_chart {
 	/**
 	 * Returns the content to be displayed
 	 *
-	 * The simplest form of returned data is single item associative array like
-	 *
-	 *  array('Chart title' => 'HTML data to be displayed')
-	 *
-	 * Multiple items are allowed in the array. If the value is not a string but
-	 * another array, then it is considered as a subsection, for example:
-	 *
-	 *  array('Recent users' => array(
-	 *      'Last week' => 'HTML data to be displayed',
-	 *      'Last month' => 'HTML data to be displayed',
-	 *  ))
-	 *
 	 *  Only one level of such subsections is allowed.
 	 *
 	 * @return array
@@ -83,11 +71,6 @@ abstract class report_overviewstats_chart {
 	 * Prepares data to be displayed
 	 */
 	protected function prepare_data() {
-
-		if (!is_null($this->data)) {
-			return;
-		}
-
 		// Gather and format the data here.
 	}
 }

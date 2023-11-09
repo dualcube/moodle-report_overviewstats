@@ -18,7 +18,7 @@
  * Displays some overview statistics for the site
  *
  * @package     report_overviewstats
- * @author 		DualCube <admin@dualcube.com>
+ * @author      DualCube <admin@dualcube.com>
  * @copyright  	Dualcube (https://dualcube.com)
  * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

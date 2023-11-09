@@ -18,7 +18,7 @@
  * Reports the new enrolments over time
  *
  * @package     report_overviewstats
- * @author 			DualCube <admin@dualcube.com>
+ * @author      DualCube <admin@dualcube.com>
  * @copyright  	Dualcube (https://dualcube.com)
  * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -93,10 +93,6 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
 
 		if (is_null($this->course)) {
 			throw new coding_exception('Course level report invoked without the reference to the course!');
-		}
-
-		if (!is_null($this->data)) {
-			return;
 		}
 
 		// Get the number of currently enrolled users.
@@ -241,13 +237,11 @@ class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
 		$format = get_string('strftimedateshort', 'core_langconfig');
 		foreach ($lastmonth as $timestamp => $enrolled) {
 			$date = userdate($timestamp, $format);
-			// $this->data['lastmonth'][] = array('date' => $date, 'enrolled' => $enrolled);
 			$this->data['lastmonth']['date'][] = $date;
 			$this->data['lastmonth']['enrolled'][] = $enrolled;
 		}
 		foreach ($lastyear as $timestamp => $enrolled) {
 			$date = userdate($timestamp, $format);
-			// $this->data['lastyear'][] = array('date' => $date, 'enrolled' => $enrolled);
 			$this->data['lastyear']['date'][] = $date;
 			$this->data['lastyear']['enrolled'][] = $enrolled;
 		}

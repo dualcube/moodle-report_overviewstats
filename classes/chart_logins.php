@@ -18,7 +18,7 @@
  * Reports various users related charts and figures
  *
  * @package     report_overviewstats
- * @author 			DualCube <admin@dualcube.com>
+ * @author      DualCube <admin@dualcube.com>
  * @copyright  	Dualcube (https://dualcube.com)
  * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -71,10 +71,6 @@ class report_overviewstats_chart_logins extends report_overviewstats_chart {
 	 */
 	protected function prepare_data() {
 		global $DB, $CFG;
-
-		if (!is_null($this->data)) {
-			return;
-		}
 
 		$now = strtotime('today midnight');
 

@@ -18,7 +18,7 @@
  * Report of the users' preferred languages
  *
  * @package     report_overviewstats
- * @author 		DualCube <admin@dualcube.com>
+ * @author      DualCube <admin@dualcube.com>
  * @copyright  	Dualcube (https://dualcube.com)
  * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -68,10 +68,6 @@ class report_overviewstats_chart_langs extends report_overviewstats_chart {
 	 */
 	protected function prepare_data() {
 		global $DB;
-
-		if (!is_null($this->data)) {
-			return;
-		}
 
 		$sql = "SELECT lang, COUNT(*)
                   FROM {user}
