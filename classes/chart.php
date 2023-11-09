@@ -16,10 +16,11 @@
 
 /**
  * Base class for all charts to be reported
- * 
+ *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 		DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -29,72 +30,64 @@ defined('MOODLE_INTERNAL') || die();
  */
 abstract class report_overviewstats_chart {
 
-    /** @var stdClass if this is course level report, holds the course record */
-    protected $course = null;
+	/** @var stdClass if this is course level report, holds the course record */
+	protected $course = null;
 
-    /** @var array data to pass to YUI Chart */
-    protected $data = null;
+	/** @var array data to pass to YUI Chart */
+	protected $data = null;
 
-    /**
-     * Constructor.
-     *
-     * Keep this cheap, no actual data gathering here yet.
-     *
-     * @param stdClass should this be a course level report, pass the course record
-     */
-    public function __construct(stdClass $course = null) {
-        if (!is_null($course)) {
-            $this->set_report_course($course);
-        }
-    }
+	/**
+	 * Constructor.
+	 *
+	 * Keep this cheap, no actual data gathering here yet.
+	 *
+	 * @param stdClass should this be a course level report, pass the course record
+	 */
+	public function __construct(stdClass $course = null) {
+		if (!is_null($course)) {
+			$this->set_report_course($course);
+		}
+	}
 
-    /**
-     * Returns the content to be displayed
-     *
-     * The simplest form of returned data is single item associative array like
-     *
-     *  array('Chart title' => 'HTML data to be displayed')
-     *
-     * Multiple items are allowed in the array. If the value is not a string but
-     * another array, then it is considered as a subsection, for example:
-     *
-     *  array('Recent users' => array(
-     *      'Last week' => 'HTML data to be displayed',
-     *      'Last month' => 'HTML data to be displayed',
-     *  ))
-     *
-     *  Only one level of such subsections is allowed.
-     *
-     * @return array
-     */
-    abstract public function get_content();
+	/**
+	 * Returns the content to be displayed
+	 *
+	 * The simplest form of returned data is single item associative array like
+	 *
+	 *  array('Chart title' => 'HTML data to be displayed')
+	 *
+	 * Multiple items are allowed in the array. If the value is not a string but
+	 * another array, then it is considered as a subsection, for example:
+	 *
+	 *  array('Recent users' => array(
+	 *      'Last week' => 'HTML data to be displayed',
+	 *      'Last month' => 'HTML data to be displayed',
+	 *  ))
+	 *
+	 *  Only one level of such subsections is allowed.
+	 *
+	 * @return array
+	 */
+	abstract public function get_content();
 
-    /**
-     * Gives the chart type a chance to inject its page requirements
-     *
-     * @param mooodle_page $page
-     */
-    public function inject_page_requirements(moodle_page $page) {
-    }
+	/**
+	 * Sets the course to produce the report for
+	 *
+	 * @param stdClass $course
+	 */
+	protected function set_report_course(stdClass $course) {
+		$this->course = $course;
+	}
 
-    /**
-     * Sets the course to produce the report for
-     *
-     * @param stdClass $course
-     */
-    protected function set_report_course(stdClass $course) {
-        $this->course = $course;
-    }
+	/**
+	 * Prepares data to be displayed
+	 */
+	protected function prepare_data() {
 
-    /**
-     * Prepares data to be displayed
-     */
-    protected function prepare_data() {
+		if (!is_null($this->data)) {
+			return;
+		}
 
-        if (!is_null($this->data)) {
-            return;
-        }
-
-        // Gather and format the data here.
-    }
+		// Gather and format the data here.
+	}
 }

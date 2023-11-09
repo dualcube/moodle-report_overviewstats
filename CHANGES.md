@@ -1,3 +1,10 @@
+### v1.6.0 ###
+
+* Added Support for moodle 4.3+.
+* Added Core charts API for render chart.
+* Fixed Remove YUI for render chart.
+
+
 ### v1.5.1 ###
 
 * Added `composer.json` to facilitate loading Moodle Plugins as dependencies. Credit goes to @michaelmeneses for the addition.

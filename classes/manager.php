@@ -16,9 +16,10 @@
 
 /**
  * Provides general methods for the plugin functionality
- * 
+ *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
+ * @author      DualCube <admin@dualcube.com>
+ * @copyright   Dualcube (https://dualcube.com)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -29,35 +30,35 @@ defined('MOODLE_INTERNAL') || die();
  */
 class report_overviewstats_manager {
 
-    /**
-     * Factory method returning instances of charts to be displayed for the site
-     *
-     * @return array of {@link report_overviewstats_chart} subclasses
-     */
-    public static function get_site_charts() {
+	/**
+	 * Factory method returning instances of charts to be displayed for the site
+	 *
+	 * @return array of {@link report_overviewstats_chart} subclasses
+	 */
+	public static function get_site_charts() {
 
-        $list = array(
-            new report_overviewstats_chart_logins(),
-            new report_overviewstats_chart_countries(),
-            new report_overviewstats_chart_langs(),
-            new report_overviewstats_chart_courses(),
-        );
+		$list = array(
+			new report_overviewstats_chart_logins(),
+			new report_overviewstats_chart_countries(),
+			new report_overviewstats_chart_langs(),
+			new report_overviewstats_chart_courses(),
+		);
 
-        return $list;
-    }
+		return $list;
+	}
 
-    /**
-     * Factory method returning instances of charts to be displayed for the given course
-     *
-     * @param stdClass $course The reported course's record
-     * @return array of {@link report_overviewstats_chart} subclasses
-     */
-    public static function get_course_charts(stdClass $course) {
+	/**
+	 * Factory method returning instances of charts to be displayed for the given course
+	 *
+	 * @param stdClass $course The reported course's record
+	 * @return array of {@link report_overviewstats_chart} subclasses
+	 */
+	public static function get_course_charts(stdClass $course) {
 
-        $list = array(
-            new report_overviewstats_chart_enrolments($course),
-        );
+		$list = array(
+			new report_overviewstats_chart_enrolments($course),
+		);
 
-        return $list;
-    }
+		return $list;
+	}
 }

@@ -16,230 +16,240 @@
 
 /**
  * Reports the new enrolments over time
- * 
+ *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 			DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/accesslib.php');
+require_once $CFG->libdir . '/accesslib.php';
 
 /**
  * Reports the new enrolments over time
  */
 class report_overviewstats_chart_enrolments extends report_overviewstats_chart {
 
-    /** @var int the number of currently enrolled users */
-    protected $current = null;
+	/** @var int the number of currently enrolled users */
+	protected $current = null;
 
-    /**
-     * @return array
-     */
-    public function get_content() {
+	/**
+	 * @return array
+	 */
+	public function get_content() {
 
-        $this->prepare_data();
+		$this->prepare_data();
 
-        $title = get_string('chart-enrolments', 'report_overviewstats');
-        $titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
-        $titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
+		$title = get_string('chart-enrolments', 'report_overviewstats');
+		$titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
+		$titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
 
-        return array($title => array(
-            $titlemonth => html_writer::tag('div', '', array(
-                'id' => 'chart_enrolments_lastmonth',
-                'class' => 'chartplaceholder',
-                'style' => 'min-height: 300px;',
-            )),
-            $titleyear => html_writer::tag('div', '', array(
-                'id' => 'chart_enrolments_lastyear',
-                'class' => 'chartplaceholder',
-                'style' => 'min-height: 300px;',
-            )),
-        ));
-    }
+		return array($title => array(
+			$titlemonth => html_writer::tag('div', $this->get_enrollments_chart($this->data['lastmonth']), array(
+				'id' => 'chart_enrolments_lastmonth',
+				'class' => 'chartplaceholder',
+				'style' => 'min-height: 300px;',
+			)),
+			$titleyear => html_writer::tag('div', $this->get_enrollments_chart($this->data['lastyear']), array(
+				'id' => 'chart_enrolments_lastyear',
+				'class' => 'chartplaceholder',
+				'style' => 'min-height: 300px;',
+			)),
+		));
+	}
 
-    /**
-     * @see parent
-     */
-    public function inject_page_requirements(moodle_page $page) {
+	/**
+	 * @return chart html
+	 */
+	protected function get_enrollments_chart($data) {
+		global $OUTPUT;
+		$sales = new \core\chart_series('Enrolled', $data['enrolled']);
+		$labels = $data['date'];
+		$chart = new \core\chart_line();
+		$chart->add_series($sales);
+		$chart->set_labels($labels);
+		return $OUTPUT->render($chart);
+	}
 
-        $this->prepare_data();
+	/**
+	 * Prepares data to report
+	 *
+	 * It is pretty tricky (actually impossible) to reconstruct the chart of the history
+	 * of enrolments. The only reliable solution would be to run a cron job every day and
+	 * store the actual number of enrolled users somewhere.
+	 *
+	 * To get at least some estimation, the report models the history using the following
+	 * algorithm. It starts at the current timestamp and gets the number of currently
+	 * enrolled users. Let us say there 42 users enrolled right now. Then it looks into
+	 * the {log} table and searches for recent 'enrol' and 'unenrol' actions. If, for example,
+	 * there is an 'enrol' action logged yesterday, then the report expects that there had
+	 * been just 41 users enrolled before that. It's not 100% accurate (for example it ignores
+	 * the enrolment duration, status etc) but gives at least something.
+	 */
+	protected function prepare_data() {
+		global $DB, $CFG;
 
-        $page->requires->yui_module(
-            'moodle-report_overviewstats-charts',
-            'M.report_overviewstats.charts.enrolments.init',
-            array($this->data)
-        );
-    }
+		if (is_null($this->course)) {
+			throw new coding_exception('Course level report invoked without the reference to the course!');
+		}
 
-    /**
-     * Prepares data to report
-     *
-     * It is pretty tricky (actually impossible) to reconstruct the chart of the history
-     * of enrolments. The only reliable solution would be to run a cron job every day and
-     * store the actual number of enrolled users somewhere.
-     *
-     * To get at least some estimation, the report models the history using the following
-     * algorithm. It starts at the current timestamp and gets the number of currently
-     * enrolled users. Let us say there 42 users enrolled right now. Then it looks into
-     * the {log} table and searches for recent 'enrol' and 'unenrol' actions. If, for example,
-     * there is an 'enrol' action logged yesterday, then the report expects that there had
-     * been just 41 users enrolled before that. It's not 100% accurate (for example it ignores
-     * the enrolment duration, status etc) but gives at least something.
-     */
-    protected function prepare_data() {
-        global $DB, $CFG;
+		if (!is_null($this->data)) {
+			return;
+		}
 
-        if (is_null($this->course)) {
-            throw new coding_exception('Course level report invoked without the reference to the course!');
-        }
+		// Get the number of currently enrolled users.
 
-        if (!is_null($this->data)) {
-            return;
-        }
-
-        // Get the number of currently enrolled users.
-
-        $context = context_course::instance($this->course->id);
-        list($esql, $params) = get_enrolled_sql($context);
-        $sql = "SELECT COUNT(u.id)
+		$context = context_course::instance($this->course->id);
+		list($esql, $params) = get_enrolled_sql($context);
+		$sql = "SELECT COUNT(u.id)
                   FROM {user} u
                   JOIN ($esql) je ON je.id = u.id
                  WHERE u.deleted = 0";
 
-        $this->current = $DB->count_records_sql($sql, $params);
+		$this->current = $DB->count_records_sql($sql, $params);
 
-        // Construct the estimated number of enrolled users in the last month
-        // and the last year using the current number and the log records.
+		// Construct the estimated number of enrolled users in the last month
+		// and the last year using the current number and the log records.
 
-        $now = time();
+		$now = time();
 
-        $lastmonth = array();
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = $this->current;
-        }
+		$lastmonth = array();
+		for ($i = 30; $i >= 0; $i--) {
+			$lastmonth[$now - $i * DAYSECS] = $this->current;
+		}
 
-        $lastyear = array();
-        for ($i = 12; $i >= 0; $i--) {
-            $lastyear[$now - $i * 30 * DAYSECS] = $this->current;
-        }
+		$lastyear = array();
+		for ($i = 12; $i >= 0; $i--) {
+			$lastyear[$now - $i * 30 * DAYSECS] = $this->current;
+		}
 
-        // Fetch all the enrol/unrol log entries from the last year.
-        if ($CFG->branch >= 27) {
+		// Fetch all the enrol/unrol log entries from the last year.
+		if ($CFG->branch >= 27) {
 
-            $logmanger = get_log_manager();
-            if ($CFG->branch >= 29) {
-                $readers = $logmanger->get_readers('\core\log\sql_reader');
-            } else {
-                $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            }
-            $reader = reset($readers);
-            $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) AND timecreated >= :timestart";
-            $params = array(
-                'component' => 'core',
-                'eventname1' => '\core\event\user_enrolment_created',
-                'eventname2' => '\core\event\user_enrolment_deleted',
-                'timestart' => $now - 30 * DAYSECS
-            );
-            $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+			$logmanger = get_log_manager();
+			if ($CFG->branch >= 29) {
+				$readers = $logmanger->get_readers('\core\log\sql_reader');
+			} else {
+				$readers = $logmanger->get_readers('\core\log\sql_select_reader');
+			}
+			$reader = reset($readers);
+			$select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) AND timecreated >= :timestart";
+			$params = array(
+				'component' => 'core',
+				'eventname1' => '\core\event\user_enrolment_created',
+				'eventname2' => '\core\event\user_enrolment_deleted',
+				'timestart' => $now - 30 * DAYSECS,
+			);
+			$events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
-            foreach ($events as $event) {
-                foreach (array_reverse($lastmonth, true) as $key => $value) {
-                    if ($event->timecreated >= $key) {
-                        // We need to amend all days up to the key.
-                        foreach ($lastmonth as $mkey => $mvalue) {
-                            if ($mkey <= $key) {
-                                if ($event->eventname === '\core\event\user_enrolment_created' and $lastmonth[$mkey] > 0) {
-                                    $lastmonth[$mkey]--;
-                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                    $lastmonth[$mkey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                foreach (array_reverse($lastyear, true) as $key => $value) {
-                    if ($event->timecreated >= $key) {
-                        // We need to amend all months up to the key.
-                        foreach ($lastyear as $ykey => $yvalue) {
-                            if ($ykey <= $key) {
-                                if ($event->eventname === '\core\event\user_enrolment_created' and $lastyear[$ykey] > 0) {
-                                    $lastyear[$ykey]--;
-                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                    $lastyear[$ykey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
+			foreach ($events as $event) {
+				foreach (array_reverse($lastmonth, true) as $key => $value) {
+					if ($event->timecreated >= $key) {
+						// We need to amend all days up to the key.
+						foreach ($lastmonth as $mkey => $mvalue) {
+							if ($mkey <= $key) {
+								if ($event->eventname === '\core\event\user_enrolment_created' and $lastmonth[$mkey] > 0) {
+									$lastmonth[$mkey]--;
+								} else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+									$lastmonth[$mkey]++;
+								}
+							}
+						}
+						break;
+					}
+				}
+				foreach (array_reverse($lastyear, true) as $key => $value) {
+					if ($event->timecreated >= $key) {
+						// We need to amend all months up to the key.
+						foreach ($lastyear as $ykey => $yvalue) {
+							if ($ykey <= $key) {
+								if ($event->eventname === '\core\event\user_enrolment_created' and $lastyear[$ykey] > 0) {
+									$lastyear[$ykey]--;
+								} else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+									$lastyear[$ykey]++;
+								}
+							}
+						}
+						break;
+					}
+				}
+			}
 
-        } else {
-            $sql = "SELECT time, action
+		} else {
+			$sql = "SELECT time, action
                       FROM {log}
                      WHERE time >= :timestart
                        AND course = :courseid
                        AND (action = 'enrol' OR action = 'unenrol')";
 
-            $params = array(
-                'timestart' => $now - YEARSECS,
-                'courseid' => $this->course->id,
-            );
+			$params = array(
+				'timestart' => $now - YEARSECS,
+				'courseid' => $this->course->id,
+			);
 
-            $rs = $DB->get_recordset_sql($sql, $params);
+			$rs = $DB->get_recordset_sql($sql, $params);
 
-            foreach ($rs as $record) {
-                foreach (array_reverse($lastmonth, true) as $key => $value) {
-                    if ($record->time >= $key) {
-                        // We need to amend all days up to the key.
-                        foreach ($lastmonth as $mkey => $mvalue) {
-                            if ($mkey <= $key) {
-                                if ($record->action === 'enrol' and $lastmonth[$mkey] > 0) {
-                                    $lastmonth[$mkey]--;
-                                } else if ($record->action === 'unenrol') {
-                                    $lastmonth[$mkey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-                foreach (array_reverse($lastyear, true) as $key => $value) {
-                    if ($record->time >= $key) {
-                        // We need to amend all months up to the key.
-                        foreach ($lastyear as $ykey => $yvalue) {
-                            if ($ykey <= $key) {
-                                if ($record->action === 'enrol' and $lastyear[$ykey] > 0) {
-                                    $lastyear[$ykey]--;
-                                } else if ($record->action === 'unenrol') {
-                                    $lastyear[$ykey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
-            }
+			foreach ($rs as $record) {
+				foreach (array_reverse($lastmonth, true) as $key => $value) {
+					if ($record->time >= $key) {
+						// We need to amend all days up to the key.
+						foreach ($lastmonth as $mkey => $mvalue) {
+							if ($mkey <= $key) {
+								if ($record->action === 'enrol' and $lastmonth[$mkey] > 0) {
+									$lastmonth[$mkey]--;
+								} else if ($record->action === 'unenrol') {
+									$lastmonth[$mkey]++;
+								}
+							}
+						}
+						break;
+					}
+				}
+				foreach (array_reverse($lastyear, true) as $key => $value) {
+					if ($record->time >= $key) {
+						// We need to amend all months up to the key.
+						foreach ($lastyear as $ykey => $yvalue) {
+							if ($ykey <= $key) {
+								if ($record->action === 'enrol' and $lastyear[$ykey] > 0) {
+									$lastyear[$ykey]--;
+								} else if ($record->action === 'unenrol') {
+									$lastyear[$ykey]++;
+								}
+							}
+						}
+						break;
+					}
+				}
+			}
 
-            $rs->close();
-        }
+			$rs->close();
+		}
 
-        $this->data = array(
-            'lastmonth' => array(),
-            'lastyear' => array(),
-        );
+		$this->data = [
+			'lastmonth' => [
+				'date' => [],
+				'enrolled' => [],
+			],
+			'lastyear' => [
+				'date' => [],
+				'enrolled' => [],
+			],
+		];
 
-        $format = get_string('strftimedateshort', 'core_langconfig');
-        foreach ($lastmonth as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $this->data['lastmonth'][] = array('date' => $date, 'enrolled' => $enrolled);
-        }
-        foreach ($lastyear as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $this->data['lastyear'][] = array('date' => $date, 'enrolled' => $enrolled);
-        }
-    }
+		$format = get_string('strftimedateshort', 'core_langconfig');
+		foreach ($lastmonth as $timestamp => $enrolled) {
+			$date = userdate($timestamp, $format);
+			// $this->data['lastmonth'][] = array('date' => $date, 'enrolled' => $enrolled);
+			$this->data['lastmonth']['date'][] = $date;
+			$this->data['lastmonth']['enrolled'][] = $enrolled;
+		}
+		foreach ($lastyear as $timestamp => $enrolled) {
+			$date = userdate($timestamp, $format);
+			// $this->data['lastyear'][] = array('date' => $date, 'enrolled' => $enrolled);
+			$this->data['lastyear']['date'][] = $date;
+			$this->data['lastyear']['enrolled'][] = $enrolled;
+		}
+	}
 }

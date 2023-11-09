@@ -18,8 +18,9 @@
  * Report of the users' preferred languages
  *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 		DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -29,67 +30,67 @@ defined('MOODLE_INTERNAL') || die();
  */
 class report_overviewstats_chart_langs extends report_overviewstats_chart {
 
-    /**
-     * @return string
-     */
-    public function get_content() {
+	/**
+	 * @return string
+	 */
+	public function get_content() {
 
-        $this->prepare_data();
+		$this->prepare_data();
 
-        $title = get_string('chart-langs', 'report_overviewstats');
-        $info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($this->data)), 'chartinfo');
-        $chart = html_writer::tag('div', '', array(
-            'id' => 'chart_langs',
-            'class' => 'chartplaceholder',
-            'style' => 'min-height: '.max(66, (count($this->data) * 20)).'px;'
-        ));
+		$title = get_string('chart-langs', 'report_overviewstats');
+		$info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($this->data['counts'])), 'chartinfo');
+		$chart = html_writer::tag('div', $this->get_languages_chart(), array(
+			'id' => 'chart_langs',
+			'class' => 'chartplaceholder',
+			'style' => 'min-height: ' . max(66, (count($this->data['counts']) * 20)) . 'px;',
+			'dir' => 'ltr',
+		));
 
-        return array($title => $info . $chart);
-    }
+		return array($title => $info . $chart);
+	}
 
-    /**
-     * @see parent
-     */
-    public function inject_page_requirements(moodle_page $page) {
+	/**
+	 * @return chart html
+	 */
+	protected function get_languages_chart() {
+		global $OUTPUT;
+		$sales = new \core\chart_series('Nuber of user', $this->data['counts']);
+		$labels = $this->data['languages'];
+		$chart = new \core\chart_bar();
+		$chart->set_horizontal(true);
+		$chart->add_series($sales);
+		$chart->set_labels($labels);
+		return $OUTPUT->render($chart);
+	}
 
-        $this->prepare_data();
+	/**
+	 * Prepares data to report
+	 */
+	protected function prepare_data() {
+		global $DB;
 
-        $page->requires->yui_module(
-            'moodle-report_overviewstats-charts',
-            'M.report_overviewstats.charts.langs.init',
-            array($this->data)
-        );
-    }
+		if (!is_null($this->data)) {
+			return;
+		}
 
-    /**
-     * Prepares data to report
-     */
-    protected function prepare_data() {
-        global $DB;
-
-        if (!is_null($this->data)) {
-            return;
-        }
-
-        $sql = "SELECT lang, COUNT(*)
+		$sql = "SELECT lang, COUNT(*)
                   FROM {user}
                  WHERE deleted = 0 AND confirmed = 1
               GROUP BY lang
               ORDER BY COUNT(*) DESC";
 
-        $data = array();
-        foreach ($DB->get_records_sql_menu($sql) as $lang => $count) {
-            if (get_string_manager()->translation_exists($lang)) {
-                $langname = get_string_manager()->get_string('thislanguageint', 'core_langconfig', null, $lang);
-            } else {
-                $langname = $lang;
-            }
-            $data[] = array(
-                'language' => $langname,
-                'count' => $count
-            );
-        }
-
-        $this->data = $data;
-    }
+		$this->data = [
+			'languages' => [],
+			'counts' => [],
+		];
+		foreach ($DB->get_records_sql_menu($sql) as $lang => $count) {
+			if (get_string_manager()->translation_exists($lang)) {
+				$langname = get_string_manager()->get_string('thislanguageint', 'core_langconfig', null, $lang);
+			} else {
+				$langname = $lang;
+			}
+			$this->data['languages'][] = $langname;
+			$this->data['counts'][] = $count;
+		}
+	}
 }

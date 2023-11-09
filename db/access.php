@@ -17,7 +17,8 @@
 /**
  * @package     report_overviewstats
  * @category    access
- * @copyright   2013 David Mudrak <david@moodle.com>
+ * @author      DualCube <admin@dualcube.com>
+ * @copyright   Dualcube (https://dualcube.com)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -25,17 +26,16 @@ defined('MOODLE_INTERNAL') || die();
 
 $capabilities = array(
 
-    'report/overviewstats:view' => array(
-        'riskbitmask' => RISK_PERSONAL,
-        'captype' => 'read',
-        'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
-            'teacher' => CAP_ALLOW,
-            'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
+	'report/overviewstats:view' => array(
+		'riskbitmask' => RISK_PERSONAL,
+		'captype' => 'read',
+		'contextlevel' => CONTEXT_COURSE,
+		'archetypes' => array(
+			'teacher' => CAP_ALLOW,
+			'editingteacher' => CAP_ALLOW,
+			'manager' => CAP_ALLOW,
+		),
 
-        'clonepermissionsfrom' => 'coursereport/stats:view',
-    )
+		'clonepermissionsfrom' => 'coursereport/stats:view',
+	),
 );
-

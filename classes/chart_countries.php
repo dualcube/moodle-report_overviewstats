@@ -16,10 +16,11 @@
 
 /**
  * Reports the number of users from each country
- * 
+ *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 		DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
@@ -29,67 +30,68 @@ defined('MOODLE_INTERNAL') || die();
  */
 class report_overviewstats_chart_countries extends report_overviewstats_chart {
 
-    /**
-     * @return array
-     */
-    public function get_content() {
+	/**
+	 * @return array
+	 */
+	public function get_content() {
 
-        $this->prepare_data();
+		$this->prepare_data();
 
-        $title = get_string('chart-countries', 'report_overviewstats');
-        $info = html_writer::div(get_string('chart-countries-info', 'report_overviewstats', count($this->data)), 'chartinfo');
-        $chart = html_writer::tag('div', '', array(
-            'id' => 'chart_countries',
-            'class' => 'chartplaceholder',
-            'style' => 'min-height: '.max(66, (count($this->data) * 20)).'px;'
-        ));
+		$title = get_string('chart-countries', 'report_overviewstats');
+		$info = html_writer::div(get_string('chart-countries-info', 'report_overviewstats', count($this->data['counts'])), 'chartinfo');
+		$chart = html_writer::tag('div', $this->get_countries_chart(), array(
+			'id' => 'chart_countries',
+			'class' => 'chartplaceholder',
+			'style' => 'min-height: ' . max(66, (count($this->data['counts']) * 20)) . 'px;',
+			'dir' => 'ltr',
+		));
 
-        return array($title => $info . $chart);
-    }
+		return array($title => $info . $chart);
+	}
 
-    /**
-     * @see parent
-     */
-    public function inject_page_requirements(moodle_page $page) {
+	/**
+	 * @return chart html
+	 */
+	protected function get_countries_chart() {
+		global $OUTPUT;
+		$sales = new \core\chart_series('Nuber of user', $this->data['counts']);
+		$labels = $this->data['countrys'];
+		$chart = new \core\chart_bar();
+		$chart->set_horizontal(true);
+		$chart->add_series($sales);
+		$chart->set_labels($labels);
+		return $OUTPUT->render($chart);
+	}
 
-        $this->prepare_data();
+	/**
+	 * Prepares data to report.
+	 */
+	protected function prepare_data() {
+		global $DB;
 
-        $page->requires->yui_module(
-            'moodle-report_overviewstats-charts',
-            'M.report_overviewstats.charts.countries.init',
-            array($this->data)
-        );
-    }
+		if (!is_null($this->data)) {
+			return;
+		}
 
-    /**
-     * Prepares data to report.
-     */
-    protected function prepare_data() {
-        global $DB;
-
-        if (!is_null($this->data)) {
-            return;
-        }
-
-        $sql = "SELECT country, COUNT(*)
+		$sql = "SELECT country, COUNT(*)
                   FROM {user}
                  WHERE country IS NOT NULL AND country <> '' AND deleted = 0 AND confirmed = 1
               GROUP BY country
               ORDER BY COUNT(*) DESC, country ASC";
 
-        $data = array();
-        foreach ($DB->get_records_sql_menu($sql) as $country => $count) {
-            if (get_string_manager()->string_exists($country, 'core_countries')) {
-                $countryname = get_string($country, 'core_countries');
-            } else {
-                $countryname = $country;
-            }
-            $data[] = array(
-                'country' => $countryname,
-                'count' => $count
-            );
-        }
-
-        $this->data = $data;
-    }
+		// $data = array();
+		$this->data = [
+			'countrys' => [],
+			'counts' => [],
+		];
+		foreach ($DB->get_records_sql_menu($sql) as $country => $count) {
+			if (get_string_manager()->string_exists($country, 'core_countries')) {
+				$countryname = get_string($country, 'core_countries');
+			} else {
+				$countryname = $country;
+			}
+			$this->data['countrys'][] = $countryname;
+			$this->data['counts'][] = $count;
+		}
+	}
 }

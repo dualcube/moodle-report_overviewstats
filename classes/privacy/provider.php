@@ -16,9 +16,10 @@
 /**
  * Privacy provider.
  *
- * @package    report_overviewstats
- * @copyright  2021 Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package     report_overviewstats
+ * @author      DualCube <admin@dualcube.com>
+ * @copyright   Dualcube (https://dualcube.com)
+ * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 namespace report_overviewstats\privacy;
@@ -34,13 +35,13 @@ defined('MOODLE_INTERNAL') || die();
  */
 class provider implements \core_privacy\local\metadata\null_provider {
 
-    /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
-     *
-     * @return  string
-     */
-    public static function get_reason() : string {
-        return 'privacy:metadata';
-    }
+	/**
+	 * Get the language string identifier with the component's language
+	 * file to explain why this plugin stores no data.
+	 *
+	 * @return  string
+	 */
+	public static function get_reason(): string {
+		return 'privacy:metadata';
+	}
 }

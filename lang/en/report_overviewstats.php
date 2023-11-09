@@ -16,11 +16,12 @@
 
 /**
  * Provides a list of strings for the plugin
- * 
+ *
  * @package     report_verviewstats
  * @category    string
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 		DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();

@@ -19,7 +19,8 @@
  *
  * @package     report_overviewstats
  * @category    output
- * @copyright   2013 David Mudrak <david@moodle.com>
+ * @author      DualCube <admin@dualcube.com>
+ * @copyright   Dualcube (https://dualcube.com)
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -30,47 +31,46 @@ defined('MOODLE_INTERNAL') || die();
  */
 class report_overviewstats_renderer extends plugin_renderer_base {
 
-    /**
-     * Render the report charts
-     *
-     * @see report_overviewstats_chart::get_content() for the expected structure
-     * @param array $charts list of {@link report_overviewstats_chart} instances
-     * @return string
-     */
-    public function charts(array $charts) {
+	/**
+	 * Render the report charts
+	 *
+	 * @see report_overviewstats_chart::get_content() for the expected structure
+	 * @param array $charts list of {@link report_overviewstats_chart} instances
+	 * @return string
+	 */
+	public function charts(array $charts) {
 
-        $outlist = '';
-        $outbody = '';
+		$outlist = '';
+		$outbody = '';
 
-        $counter = 0;
-        foreach ($charts as $chart) {
-            foreach ($chart->get_content() as $title => $content) {
-                $counter++;
-                $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_'.$counter, s($title)));
-                $outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_'.$counter));
-                $outbody .= $this->output->heading($title, 2);
-                if (is_array($content)) {
-                    foreach ($content as $subtitle => $subcontent) {
-                        $outbody .= html_writer::start_div('subchart');
-                        $outbody .= $this->output->heading($subtitle, 3);
-                        $outbody .= $subcontent;
-                        $outbody .= html_writer::end_div();
-                    }
-                } else {
-                    $outbody .= $content;
-                }
-                $outbody .= html_writer::end_div();
-            }
+		$counter = 0;
+		foreach ($charts as $chart) {
+			foreach ($chart->get_content() as $title => $content) {
+				$counter++;
+				$outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
+				$outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_' . $counter));
+				$outbody .= $this->output->heading($title, 2);
+				if (is_array($content)) {
+					foreach ($content as $subtitle => $subcontent) {
+						$outbody .= html_writer::start_div('subchart');
+						$outbody .= $this->output->heading($subtitle, 3);
+						$outbody .= $subcontent;
+						$outbody .= html_writer::end_div();
+					}
+				} else {
+					$outbody .= $content;
+				}
+				$outbody .= html_writer::end_div();
+			}
+		}
 
-        }
+		$out = $this->output->header();
+		$out .= html_writer::start_tag('ul', array('class' => 'chartslist'));
+		$out .= $outlist;
+		$out .= html_writer::end_tag('ul');
+		$out .= html_writer::div($outbody, 'charts');
+		$out .= $this->output->footer();
 
-        $out  = $this->output->header();
-        $out .= html_writer::start_tag('ul', array('class' => 'chartslist'));
-        $out .= $outlist;
-        $out .= html_writer::end_tag('ul');
-        $out .= html_writer::div($outbody, 'charts');
-        $out .= $this->output->footer();
-
-        return $out;
-    }
+		return $out;
+	}
 }

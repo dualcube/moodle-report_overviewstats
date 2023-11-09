@@ -3,11 +3,26 @@
 {
     margin-bottom:1em;
 }
-#page-admin-report-overviewstats-index .chartplaceholder,
-#page-report-overviewstats-index .chartplaceholder
-{
-    background-image:url([[pix:moodle|i/loading]]);
-    background-repeat:no-repeat;
-    background-position:center center;
-    min-height:66px;
+
+#page-admin-report-overviewstats-index .chart-image,
+#page-report-overviewstats-index .chart-image {
+    width: 100% !important;
+}
+
+ul.chartslist {
+    padding: 0;
+    display: flex;
+    gap: 0.5rem;
+}
+#page-admin-report-overviewstats-index .chartslist li,
+#page-report-overviewstats-index .chartslist li{
+    list-style: none;
+    background: #0f6cbf;
+    border-radius: 0.25rem;
+    padding: 0.25rem 0.5rem;
+}
+
+#page-admin-report-overviewstats-index .chartslist li a,
+#page-report-overviewstats-index .chartslist li a{
+    color: #f9f8fb;
 }

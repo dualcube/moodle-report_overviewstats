@@ -16,130 +16,132 @@
 
 /**
  * Reports various users related charts and figures
- * 
+ *
  * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @author 			DualCube <admin@dualcube.com>
+ * @copyright  	Dualcube (https://dualcube.com)
+ * @license    	http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir.'/accesslib.php');
+require_once $CFG->libdir . '/accesslib.php';
 
 /**
  * Reports various users related charts and figures
  */
 class report_overviewstats_chart_logins extends report_overviewstats_chart {
 
-    /**
-     * @return array
-     */
-    public function get_content() {
+	/**
+	 * @return array
+	 */
+	public function get_content() {
 
-        $this->prepare_data();
+		$this->prepare_data();
 
-        $title = get_string('chart-logins', 'report_overviewstats');
-        $titleperday = get_string('chart-logins-perday', 'report_overviewstats');
+		$title = get_string('chart-logins', 'report_overviewstats');
+		$titleperday = get_string('chart-logins-perday', 'report_overviewstats');
 
-        return array($title => array(
-            $titleperday => html_writer::tag('div', '', array(
-                'id' => 'chart_logins_perday',
-                'class' => 'chartplaceholder',
-                'style' => 'min-height: 300px;',
-            )),
-        ));
-    }
+		return array($title => array(
+			$titleperday => html_writer::tag('div', $this->get_login_parday_chart(), array(
+				'id' => 'chart_logins_perday',
+				'class' => 'chartplaceholder',
+				'style' => 'min-height: 300px;',
+				'dir' => 'ltr',
+			)),
+		));
+	}
 
-    /**
-     * @see parent
-     */
-    public function inject_page_requirements(moodle_page $page) {
+	/**
+	 * @return chart html
+	 */
+	protected function get_login_parday_chart() {
+		global $OUTPUT;
+		$sales = new \core\chart_series('Logedins', $this->data['loggedins']);
+		$labels = $this->data['dates'];
 
-        $this->prepare_data();
+		$chart = new \core\chart_line();
+		$chart->add_series($sales);
+		$chart->set_labels($labels);
+		return $OUTPUT->render($chart);
+	}
 
-        $page->requires->yui_module(
-            'moodle-report_overviewstats-charts',
-            'M.report_overviewstats.charts.logins.init',
-            array($this->data)
-        );
-    }
+	/**
+	 * Prepares data to report
+	 */
+	protected function prepare_data() {
+		global $DB, $CFG;
 
-    /**
-     * Prepares data to report
-     */
-    protected function prepare_data() {
-        global $DB, $CFG;
+		if (!is_null($this->data)) {
+			return;
+		}
 
-        if (!is_null($this->data)) {
-            return;
-        }
+		$now = strtotime('today midnight');
 
-        $now = strtotime('today midnight');
+		$lastmonth = array();
+		for ($i = 30; $i >= 0; $i--) {
+			$lastmonth[$now - $i * DAYSECS] = array();
+		}
 
-        $lastmonth = array();
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = array();
-        }
+		if ($CFG->branch >= 27) {
+			$logmanger = get_log_manager();
+			if ($CFG->branch >= 29) {
+				$readers = $logmanger->get_readers('\core\log\sql_reader');
+			} else {
+				$readers = $logmanger->get_readers('\core\log\sql_select_reader');
+			}
+			$reader = reset($readers);
+			$params = array('component' => 'core',
+				'eventname' => '\core\event\user_loggedin',
+				'guestid' => $CFG->siteguest,
+				'timestart' => $now - 30 * DAYSECS);
+			$select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
+			$rs = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
-        if ($CFG->branch >= 27) {
-            $logmanger = get_log_manager();
-            if ($CFG->branch >= 29) {
-                $readers = $logmanger->get_readers('\core\log\sql_reader');
-            } else {
-                $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            }
-            $reader = reset($readers);
-            $params = array('component' => 'core',
-                            'eventname' => '\core\event\user_loggedin',
-                            'guestid' => $CFG->siteguest,
-                            'timestart' => $now - 30 * DAYSECS);
-            $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
-            $rs = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+			foreach ($rs as $record) {
+				foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
+					$date = usergetdate($timestamp);
+					if ($record->timecreated >= $timestamp) {
+						$lastmonth[$timestamp][$record->userid] = true;
+						break;
+					}
+				}
+			}
 
-            foreach ($rs as $record) {
-                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                    $date = usergetdate($timestamp);
-                    if ($record->timecreated >= $timestamp) {
-                        $lastmonth[$timestamp][$record->userid] = true;
-                        break;
-                    }
-                }
-            }
-
-        } else {
-            $sql = "SELECT time, userid
+		} else {
+			$sql = "SELECT time, userid
                       FROM {log}
                      WHERE time >= :timestart
                        AND userid <> :guestid
                        AND action = 'login'";
 
-            $params = array('timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest);
+			$params = array('timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest);
 
-            $rs = $DB->get_recordset_sql($sql, $params);
+			$rs = $DB->get_recordset_sql($sql, $params);
 
-            foreach ($rs as $record) {
-                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                    $date = usergetdate($timestamp);
-                    if ($record->time >= $timestamp) {
-                        $lastmonth[$timestamp][$record->userid] = true;
-                        break;
-                    }
-                }
-            }
-            $rs->close();
-        }
+			foreach ($rs as $record) {
+				foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
+					$date = usergetdate($timestamp);
+					if ($record->time >= $timestamp) {
+						$lastmonth[$timestamp][$record->userid] = true;
+						break;
+					}
+				}
+			}
+			$rs->close();
+		}
 
-        $this->data = array(
-            'perday' => array(),
-        );
+		$this->data = [
+			'dates' => [],
+			'loggedins' => [],
+		];
 
-        $format = get_string('strftimedateshort', 'core_langconfig');
+		$format = get_string('strftimedateshort', 'core_langconfig');
 
-        foreach ($lastmonth as $timestamp => $loggedin) {
-            $date = userdate($timestamp, $format);
-            $this->data['perday'][] = array('date' => $date, 'loggedin' => count($loggedin));
-        }
-        // Ignore today's stats (not complete yet).
-        array_pop($this->data['perday']);
-    }
+		foreach ($lastmonth as $timestamp => $loggedin) {
+			$date = userdate($timestamp, $format);
+			$this->data['dates'][] = $date;
+			$this->data['loggedins'][] = count($loggedin);
+		}
+	}
 }
