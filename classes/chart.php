@@ -26,29 +26,16 @@
 defined('MOODLE_INTERNAL') || die();
 
 class report_overviewstats_chart {
-	public $chart = [];
-
-	function __construct($course) {
-		if (is_null($course)) {
-			$this->chart[] = $this->report_overviewstats_chart_logins();
-			$this->chart[] = $this->report_overviewstats_chart_countries();
-			$this->chart[] = $this->report_overviewstats_chart_langs();
-			$this->chart[] = $this->report_overviewstats_chart_courses();
-		} else {
-			$this->chart[] = $this->report_overviewstats_chart_enrolments($course);
-		}
-	}
-
 	/**
 	 * @return array
 	 */
-	public function report_overviewstats_chart_logins() {
-		$main_data = $this->prepare_data_login_parday_chart();
+	public static function report_overviewstats_chart_logins() {
+		$main_data = self::prepare_data_login_parday_chart();
 		$title = get_string('chart-logins', 'report_overviewstats');
 		$titleperday = get_string('chart-logins-perday', 'report_overviewstats');
 
 		return array($title => array(
-			$titleperday => html_writer::tag('div', $this->get_chart(new \core\chart_line(), 'Logedins', $main_data['loggedins'], $main_data['dates'], false), array(
+			$titleperday => html_writer::tag('div', self::get_chart(new \core\chart_line(), 'Logedins', $main_data['loggedins'], $main_data['dates'], false), array(
 				'id' => 'chart_logins_perday',
 				'class' => 'chartplaceholder',
 				'style' => 'min-height: 300px;',
@@ -60,7 +47,7 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	protected function prepare_data_login_parday_chart() {
+	protected static function prepare_data_login_parday_chart() {
 		global $DB, $CFG;
 
 		$now = strtotime('today midnight');
@@ -130,12 +117,12 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	public function report_overviewstats_chart_countries() {
-		$main_data = $this->prepare_data_chart_countries();
+	public static function report_overviewstats_chart_countries() {
+		$main_data = self::prepare_data_chart_countries();
 
 		$title = get_string('chart-countries', 'report_overviewstats');
 		$info = html_writer::div(get_string('chart-countries-info', 'report_overviewstats', count($main_data['counts'])), 'chartinfo');
-		$chart = html_writer::tag('div', $this->get_chart(new \core\chart_bar(), 'Nuber of user', $main_data['counts'], $main_data['countrys'], true), array(
+		$chart = html_writer::tag('div', self::get_chart(new \core\chart_bar(), 'Nuber of user', $main_data['counts'], $main_data['countrys'], true), array(
 			'id' => 'chart_countries',
 			'class' => 'chartplaceholder',
 			'style' => 'min-height: ' . max(66, (count($main_data['counts']) * 20)) . 'px;',
@@ -148,7 +135,7 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	protected function prepare_data_chart_countries() {
+	protected static function prepare_data_chart_countries() {
 		global $DB;
 
 		$sql = "SELECT country, COUNT(*)
@@ -176,12 +163,12 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	public function report_overviewstats_chart_langs() {
-		$main_data = $this->prepare_data_chart_langs();
+	public static function report_overviewstats_chart_langs() {
+		$main_data = self::prepare_data_chart_langs();
 
 		$title = get_string('chart-langs', 'report_overviewstats');
 		$info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($main_data['counts'])), 'chartinfo');
-		$chart = html_writer::tag('div', $this->get_chart(new \core\chart_bar(), 'Nuber of user', $main_data['counts'], $main_data['languages'], true), array(
+		$chart = html_writer::tag('div', self::get_chart(new \core\chart_bar(), 'Nuber of user', $main_data['counts'], $main_data['languages'], true), array(
 			'id' => 'chart_langs',
 			'class' => 'chartplaceholder',
 			'style' => 'min-height: ' . max(66, (count($main_data['counts']) * 20)) . 'px;',
@@ -194,7 +181,7 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	protected function prepare_data_chart_langs() {
+	protected static function prepare_data_chart_langs() {
 		global $DB;
 
 		$sql = "SELECT lang, COUNT(*)
@@ -223,10 +210,10 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	public function report_overviewstats_chart_courses() {
+	public static function report_overviewstats_chart_courses() {
 		global $OUTPUT;
 
-		$main_data = $this->prepare_data_chart_courses();
+		$main_data = self::prepare_data_chart_courses();
 
 		$title = get_string('chart-courses', 'report_overviewstats');
 		$titlepercategory = get_string('chart-courses-percategory', 'report_overviewstats');
@@ -256,7 +243,7 @@ class report_overviewstats_chart {
 					'class' => 'simple_data_table',
 				)
 			),
-			$titlesizes => html_writer::tag('div', $this->get_chart(new \core\chart_bar(), 'Nuber of courses', $main_data['sizes']['courses'], $main_data['sizes']['course_size'], false), array(
+			$titlesizes => html_writer::tag('div', self::get_chart(new \core\chart_bar(), 'Nuber of courses', $main_data['sizes']['courses'], $main_data['sizes']['course_size'], false), array(
 				'id' => 'chart_courses_sizes',
 				'class' => 'chartplaceholder',
 				'style' => 'min-height: 300px;',
@@ -268,7 +255,7 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	protected function prepare_data_chart_courses() {
+	protected static function prepare_data_chart_courses() {
 		global $DB;
 		$main_data = [];
 		// Number of courses per category.
@@ -340,20 +327,20 @@ class report_overviewstats_chart {
 	/**
 	 * @return array
 	 */
-	public function report_overviewstats_chart_enrolments($course) {
-		$main_data = $this->prepare_data_chart_enrollments($course);
+	public static function report_overviewstats_chart_enrolments($course) {
+		$main_data = self::prepare_data_chart_enrollments($course);
 
 		$title = get_string('chart-enrolments', 'report_overviewstats');
 		$titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
 		$titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
 
 		return array($title => array(
-			$titlemonth => html_writer::tag('div', $this->get_chart(new \core\chart_line(), 'Enrolled', $main_data['lastmonth']['enrolled'], $main_data['lastmonth']['date'], false), array(
+			$titlemonth => html_writer::tag('div', self::get_chart(new \core\chart_line(), 'Enrolled', $main_data['lastmonth']['enrolled'], $main_data['lastmonth']['date'], false), array(
 				'id' => 'chart_enrolments_lastmonth',
 				'class' => 'chartplaceholder',
 				'style' => 'min-height: 300px;',
 			)),
-			$titleyear => html_writer::tag('div', $this->get_chart(new \core\chart_line(), 'Enrolled', $main_data['lastyear']['enrolled'], $main_data['lastyear']['date'], false), array(
+			$titleyear => html_writer::tag('div', self::get_chart(new \core\chart_line(), 'Enrolled', $main_data['lastyear']['enrolled'], $main_data['lastyear']['date'], false), array(
 				'id' => 'chart_enrolments_lastyear',
 				'class' => 'chartplaceholder',
 				'style' => 'min-height: 300px;',
@@ -361,7 +348,7 @@ class report_overviewstats_chart {
 		));
 	}
 
-	protected function prepare_data_chart_enrollments($course) {
+	protected static function prepare_data_chart_enrollments($course) {
 		global $DB, $CFG;
 
 		if (is_null($course)) {
@@ -453,7 +440,7 @@ class report_overviewstats_chart {
 
 			$params = array(
 				'timestart' => $now - YEARSECS,
-				'courseid' => $this->course->id,
+				'courseid' => $course->id,
 			);
 
 			$rs = $DB->get_recordset_sql($sql, $params);
@@ -523,7 +510,7 @@ class report_overviewstats_chart {
 	/**
 	 * @return chart html
 	 */
-	protected function get_chart($chart, $series_name, $series_data, $labels_data, $is_horizontal) {
+	protected static function get_chart($chart, $series_name, $series_data, $labels_data, $is_horizontal) {
 		global $OUTPUT;
 		$series = new \core\chart_series($series_name, $series_data);
 		$labels = $labels_data;

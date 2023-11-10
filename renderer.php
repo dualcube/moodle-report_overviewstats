@@ -38,13 +38,22 @@ class report_overviewstats_renderer extends plugin_renderer_base {
 	 * @param array $charts list of {@link report_overviewstats_chart} instances
 	 * @return string
 	 */
-	public function charts(array $charts) {
+	public function charts($course) {
+		$charts_data = [];
+		if (is_null($course)) {
+			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_logins();
+			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_countries();
+			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_langs();
+			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_courses();
+		} else {
+			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_enrolments($course);
+		}
 
 		$outlist = '';
 		$outbody = '';
 
 		$counter = 0;
-		foreach ($charts as $chart) {
+		foreach ($charts_data as $chart) {
 			foreach ($chart as $title => $content) {
 				$counter++;
 				$outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));

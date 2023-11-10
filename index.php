@@ -47,8 +47,6 @@ if (is_null($courseid)) {
 	$PAGE->set_heading($course->fullname . ' - ' . get_string('pluginname', 'report_overviewstats'));
 }
 
-$overviewstats_chart = new report_overviewstats_chart($course);
-
 $output = $PAGE->get_renderer('report_overviewstats');
 
-echo $output->charts($overviewstats_chart->chart);
+echo $output->charts($course);
