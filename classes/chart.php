@@ -167,10 +167,10 @@ class report_overviewstats_manager {
 		global $DB;
 
 		$sql = "SELECT country, COUNT(*)
-							FROM {user}
-						 WHERE country IS NOT NULL AND country <> '' AND deleted = 0 AND confirmed = 1
-					GROUP BY country
-					ORDER BY COUNT(*) DESC, country ASC";
+		          FROM {user}
+		         WHERE country IS NOT NULL AND country <> '' AND deleted = 0 AND confirmed = 1
+		      GROUP BY country
+		      ORDER BY COUNT(*) DESC, country ASC";
 
 		$main_data = [
 			'countrys' => [],
