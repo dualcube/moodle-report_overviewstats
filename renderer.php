@@ -45,7 +45,7 @@ class report_overviewstats_renderer extends plugin_renderer_base {
 
 		$counter = 0;
 		foreach ($charts as $chart) {
-			foreach ($chart->get_content() as $title => $content) {
+			foreach ($chart as $title => $content) {
 				$counter++;
 				$outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
 				$outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_' . $counter));

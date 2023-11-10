@@ -34,7 +34,7 @@ Available course level reports
 __Enrolled users__ chart displays the progress of user enrolments into the
 course based on estimated historical figures.
 
-Maintained by
--------------
-
+Author
+------
 This add-on is currently maintained by [DualCube](https://github.com/dualcube).
+It was written by David Mudrák david@moodle.com, @mudrd8mz.

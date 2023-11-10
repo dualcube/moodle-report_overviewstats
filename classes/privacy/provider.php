@@ -26,13 +26,6 @@ namespace report_overviewstats\privacy;
 
 defined('MOODLE_INTERNAL') || die();
 
-/**
- * Privacy provider.
- *
- * @package    report_overviewstats
- * @copyright  2021 Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class provider implements \core_privacy\local\metadata\null_provider {
 
 	/**
