@@ -28,12 +28,11 @@ require_once $CFG->libdir . '/adminlib.php';
 require_once $CFG->dirroot . '/report/overviewstats/locallib.php';
 
 $courseid = optional_param('course', null, PARAM_INT);
-$overviewstats_manager = new report_overviewstats_manager();
+$course = null;
 
 if (is_null($courseid)) {
 	// Site level reports.
 	admin_externalpage_setup('overviewstats', '', null, '', array('pagelayout' => 'report'));
-	$charts = $overviewstats_manager->get_site_charts();
 } else {
 	// Course level report.
 	$course = $DB->get_record('course', array('id' => $courseid), '*', MUST_EXIST);
@@ -46,10 +45,10 @@ if (is_null($courseid)) {
 	$PAGE->set_pagelayout('report');
 	$PAGE->set_title($course->shortname . ' - ' . get_string('pluginname', 'report_overviewstats'));
 	$PAGE->set_heading($course->fullname . ' - ' . get_string('pluginname', 'report_overviewstats'));
-
-	$charts = $overviewstats_manager->get_course_charts($course);
 }
+
+$overviewstats_chart = new report_overviewstats_chart($course);
 
 $output = $PAGE->get_renderer('report_overviewstats');
 
-echo $output->charts($charts);
+echo $output->charts($overviewstats_chart->chart);

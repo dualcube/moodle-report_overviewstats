@@ -25,39 +25,24 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-class report_overviewstats_manager {
-	/**
-	 * Factory method returning list of charts to be displayed for the site
-	 *
-	 * @return array of {@link report_overviewstats_chart} html
-	 */
-	public function get_site_charts() {
-		$list = array(
-			$this->report_overviewstats_chart_logins(),
-			$this->report_overviewstats_chart_countries(),
-			$this->report_overviewstats_chart_langs(),
-			$this->report_overviewstats_chart_courses(),
-		);
-		return $list;
-	}
+class report_overviewstats_chart {
+	public $chart = [];
 
-	/**
-	 * Factory method returning list of charts to be displayed for the given course
-	 *
-	 * @param stdClass $course The reported course's record
-	 * @return array of {@link report_overviewstats_chart} html
-	 */
-	public function get_course_charts(stdClass $course) {
-		$list = array(
-			$this->report_overviewstats_chart_enrolments($course),
-		);
-		return $list;
+	function __construct($course) {
+		if (is_null($course)) {
+			$this->chart[] = $this->report_overviewstats_chart_logins();
+			$this->chart[] = $this->report_overviewstats_chart_countries();
+			$this->chart[] = $this->report_overviewstats_chart_langs();
+			$this->chart[] = $this->report_overviewstats_chart_courses();
+		} else {
+			$this->chart[] = $this->report_overviewstats_chart_enrolments($course);
+		}
 	}
 
 	/**
 	 * @return array
 	 */
-	protected function report_overviewstats_chart_logins() {
+	public function report_overviewstats_chart_logins() {
 		$main_data = $this->prepare_data_login_parday_chart();
 		$title = get_string('chart-logins', 'report_overviewstats');
 		$titleperday = get_string('chart-logins-perday', 'report_overviewstats');
@@ -145,7 +130,7 @@ class report_overviewstats_manager {
 	/**
 	 * @return array
 	 */
-	protected function report_overviewstats_chart_countries() {
+	public function report_overviewstats_chart_countries() {
 		$main_data = $this->prepare_data_chart_countries();
 
 		$title = get_string('chart-countries', 'report_overviewstats');
@@ -191,7 +176,7 @@ class report_overviewstats_manager {
 	/**
 	 * @return array
 	 */
-	protected function report_overviewstats_chart_langs() {
+	public function report_overviewstats_chart_langs() {
 		$main_data = $this->prepare_data_chart_langs();
 
 		$title = get_string('chart-langs', 'report_overviewstats');
@@ -238,7 +223,7 @@ class report_overviewstats_manager {
 	/**
 	 * @return array
 	 */
-	protected function report_overviewstats_chart_courses() {
+	public function report_overviewstats_chart_courses() {
 		global $OUTPUT;
 
 		$main_data = $this->prepare_data_chart_courses();
@@ -355,7 +340,7 @@ class report_overviewstats_manager {
 	/**
 	 * @return array
 	 */
-	protected function report_overviewstats_chart_enrolments($course) {
+	public function report_overviewstats_chart_enrolments($course) {
 		$main_data = $this->prepare_data_chart_enrollments($course);
 
 		$title = get_string('chart-enrolments', 'report_overviewstats');
