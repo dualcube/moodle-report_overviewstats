@@ -14,72 +14,71 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * HTML rendering methods are defined here
- *
- * @package     report_overviewstats
- * @category    output
- * @author      DualCube <admin@dualcube.com>
- * @copyright   Dualcube (https://dualcube.com)
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
+ /**
+  * HTML rendering methods are defined here
+  *
+  * @package report_overviewstats
+  * @category output
+  * @package report_overviewstats
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 
 /**
  * Overview statistics renderer
  */
 class report_overviewstats_renderer extends plugin_renderer_base {
 
-	/**
-	 * Render the report charts
-	 *
-	 * @see report_overviewstats_chart::get_content() for the expected structure
-	 * @param array $charts list of {@link report_overviewstats_chart} instances
-	 * @return string
-	 */
-	public function charts($course) {
-		$charts_data = [];
-		if (is_null($course)) {
-			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_logins();
-			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_countries();
-			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_langs();
-			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_courses();
-		} else {
-			$charts_data[] = report_overviewstats_chart::report_overviewstats_chart_enrolments($course);
-		}
+    /**
+     * Render the report charts
+     *
+     * @see report_overviewstats_chart::get_content() for the expected structure
+     * @param array $charts list of {@link report_overviewstats_chart} instances
+     * @return string
+     */
+    public function charts($course) {
+        $chartsdata = [];
+        if (is_null($course)) {
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_logins();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_countries();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_langs();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_courses();
+        } else {
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_enrolments($course);
+        }
 
-		$outlist = '';
-		$outbody = '';
+        $outlist = '';
+        $outbody = '';
 
-		$counter = 0;
-		foreach ($charts_data as $chart) {
-			foreach ($chart as $title => $content) {
-				$counter++;
-				$outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
-				$outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_' . $counter));
-				$outbody .= $this->output->heading($title, 2);
-				if (is_array($content)) {
-					foreach ($content as $subtitle => $subcontent) {
-						$outbody .= html_writer::start_div('subchart');
-						$outbody .= $this->output->heading($subtitle, 3);
-						$outbody .= $subcontent;
-						$outbody .= html_writer::end_div();
-					}
-				} else {
-					$outbody .= $content;
-				}
-				$outbody .= html_writer::end_div();
-			}
-		}
+        $counter = 0;
+        foreach ($chartsdata as $chart) {
+            foreach ($chart as $title => $content) {
+                $counter++;
+                $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
+                $outbody .= html_writer::start_div('chart', ['id' => 'chart_seq_' . $counter]);
+                $outbody .= $this->output->heading($title, 2);
+                if (is_array($content)) {
+                    foreach ($content as $subtitle => $subcontent) {
+                        $outbody .= html_writer::start_div('subchart');
+                        $outbody .= $this->output->heading($subtitle, 3);
+                        $outbody .= $subcontent;
+                        $outbody .= html_writer::end_div();
+                    }
+                } else {
+                    $outbody .= $content;
+                }
+                $outbody .= html_writer::end_div();
+            }
+        }
 
-		$out = $this->output->header();
-		$out .= html_writer::start_tag('ul', array('class' => 'chartslist'));
-		$out .= $outlist;
-		$out .= html_writer::end_tag('ul');
-		$out .= html_writer::div($outbody, 'charts');
-		$out .= $this->output->footer();
+        $out = $this->output->header();
+        $out .= html_writer::start_tag('ul', ['class' => 'chartslist']);
+        $out .= $outlist;
+        $out .= html_writer::end_tag('ul');
+        $out .= html_writer::div($outbody, 'charts');
+        $out .= $this->output->footer();
 
-		return $out;
-	}
+        return $out;
+    }
 }
