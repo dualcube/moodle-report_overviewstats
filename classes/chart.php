@@ -415,12 +415,14 @@ class report_overviewstats_chart {
                 $readers = $logmanger->get_readers('\core\log\sql_select_reader');
             }
             $reader = reset($readers);
-            $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) AND timecreated >= :timestart";
+            $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) ".
+            "AND timecreated >= :timestart AND courseid = :courseid";
             $params = [
                 'component' => 'core',
                 'eventname1' => '\core\event\user_enrolment_created',
                 'eventname2' => '\core\event\user_enrolment_deleted',
                 'timestart' => $now - 30 * DAYSECS,
+                'courseid' => $course->id,
             ];
             $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 

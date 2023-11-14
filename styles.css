@@ -1,28 +1,29 @@
-#page-admin-report-overviewstats-index .chartinfo,
-#page-report-overviewstats-index .chartinfo
+.path-report-overviewstats .chartinfo,
+.path-admin-report-overviewstats .chartinfo
 {
     margin-bottom:1em;
 }
 
-.chart-image,
-.chart-image {
+.path-report-overviewstats .chart-image,
+.path-admin-report-overviewstats .chart-image {
     width: 100% !important;
 }
 
-ul.chartslist {
+.path-report-overviewstats ul.chartslist,
+.path-admin-report-overviewstats ul.chartslist {
     padding: 0;
     display: flex;
     gap: 0.5rem;
 }
-.chartslist li,
-.chartslist li{
+.path-report-overviewstats .chartslist li,
+.path-admin-report-overviewstats .chartslist li{
     list-style: none;
     background: #0f6cbf;
     border-radius: 0.25rem;
     padding: 0.25rem 0.5rem;
 }
 
-.chartslist li a,
-.chartslist li a{
+.path-report-overviewstats .chartslist li a,
+.path-admin-report-overviewstats .chartslist li a{
     color: #f9f8fb;
 }
