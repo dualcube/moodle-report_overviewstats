@@ -80,9 +80,9 @@ class report_overviewstats_chart {
                 }
             }
         } else {
-            $sql = "SELECT time, userid " .
-                   "FROM {log} " .
-                   "WHERE time >= :timestart AND userid <> :guestid AND action = 'login'";
+            $sql = "SELECT time, userid
+                      FROM {log}
+                     WHERE time >= :timestart AND userid <> :guestid AND action = 'login'";
 
             $params = ['timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest];
 
@@ -141,11 +141,11 @@ class report_overviewstats_chart {
     protected static function prepare_data_chart_countries() {
         global $DB;
 
-        $sql = "SELECT country, COUNT(*) " .
-                  "FROM {user} " .
-                 "WHERE country IS NOT NULL AND country <> '' AND deleted = 0 AND confirmed = 1 " .
-              "GROUP BY country " .
-              "ORDER BY COUNT(*) DESC, country ASC";
+        $sql = "SELECT country, COUNT(*)
+                  FROM {user}
+                 WHERE country IS NOT NULL AND country <> '' AND deleted = 0 AND confirmed = 1
+              GROUP BY country
+              ORDER BY COUNT(*) DESC, country ASC";
 
         $maindata = [
             'countrys' => [],
@@ -188,11 +188,11 @@ class report_overviewstats_chart {
     protected static function prepare_data_chart_langs() {
         global $DB;
 
-        $sql = "SELECT lang, COUNT(*) " .
-                  "FROM {user} " .
-                 "WHERE deleted = 0 AND confirmed = 1 " .
-              "GROUP BY lang " .
-              "ORDER BY COUNT(*) DESC";
+        $sql = "SELECT lang, COUNT(*)
+                  FROM {user}
+                 WHERE deleted = 0 AND confirmed = 1
+              GROUP BY lang
+              ORDER BY COUNT(*) DESC";
 
         $maindata = [
             'languages' => [],
@@ -291,9 +291,9 @@ class report_overviewstats_chart {
         ];
 
         // Distribution graph of number of activities per course.
-        $sql = "SELECT course, COUNT(id) AS modules " .
-                  "FROM {course_modules} " .
-                 "GROUP BY course";
+        $sql = "SELECT course, COUNT(id) AS modules
+                  FROM {course_modules}
+              GROUP BY course";
 
         $rs = $DB->get_recordset_sql($sql);
 
@@ -383,10 +383,10 @@ class report_overviewstats_chart {
 
         $context = context_course::instance($course->id);
         list($esql, $params) = get_enrolled_sql($context);
-        $sql = "SELECT COUNT(u.id) " .
-                  "FROM {user} u " .
-                  "JOIN ($esql) je ON je.id = u.id " .
-                 "WHERE u.deleted = 0";
+        $sql = "SELECT COUNT(u.id)
+                  FROM {user} u
+                  JOIN ($esql) je ON je.id = u.id
+                 WHERE u.deleted = 0";
 
         $current = $DB->count_records_sql($sql, $params);
 
@@ -460,9 +460,9 @@ class report_overviewstats_chart {
             }
 
         } else {
-            $sql = "SELECT time, action " .
-                      "FROM {log} " .
-                     "WHERE time >= :timestart AND course = :courseid AND (action = 'enrol' OR action = 'unenrol')";
+            $sql = "SELECT time, action
+                      FROM {log}
+                     WHERE time >= :timestart AND course = :courseid AND (action = 'enrol' OR action = 'unenrol')";
 
             $params = [
                 'timestart' => $now - YEARSECS,
