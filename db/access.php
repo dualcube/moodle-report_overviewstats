@@ -14,28 +14,28 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * @package     report_overviewstats
- * @category    access
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
+ /**
+  * @package report_overviewstats
+  * @category access
+  * @author DualCube <admin@dualcube.com>
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 defined('MOODLE_INTERNAL') || die();
 
-$capabilities = array(
+$capabilities = [
 
-    'report/overviewstats:view' => array(
+    'report/overviewstats:view' => [
         'riskbitmask' => RISK_PERSONAL,
         'captype' => 'read',
         'contextlevel' => CONTEXT_COURSE,
-        'archetypes' => array(
+        'archetypes' => [
             'teacher' => CAP_ALLOW,
             'editingteacher' => CAP_ALLOW,
-            'manager' => CAP_ALLOW
-        ),
+            'manager' => CAP_ALLOW,
+        ],
 
         'clonepermissionsfrom' => 'coursereport/stats:view',
-    )
-);
-
+    ],
+];

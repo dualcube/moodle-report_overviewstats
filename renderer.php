@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * HTML rendering methods are defined here
- *
- * @package     report_overviewstats
- * @category    output
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
-defined('MOODLE_INTERNAL') || die();
+ /**
+  * HTML rendering methods are defined here
+  *
+  * @package report_overviewstats
+  * @category output
+  * @package report_overviewstats
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 
 /**
  * Overview statistics renderer
@@ -37,17 +37,26 @@ class report_overviewstats_renderer extends plugin_renderer_base {
      * @param array $charts list of {@link report_overviewstats_chart} instances
      * @return string
      */
-    public function charts(array $charts) {
+    public function charts($course) {
+        $chartsdata = [];
+        if (is_null($course)) {
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_logins();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_countries();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_langs();
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_courses();
+        } else {
+            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_enrolments($course);
+        }
 
         $outlist = '';
         $outbody = '';
 
         $counter = 0;
-        foreach ($charts as $chart) {
-            foreach ($chart->get_content() as $title => $content) {
+        foreach ($chartsdata as $chart) {
+            foreach ($chart as $title => $content) {
                 $counter++;
-                $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_'.$counter, s($title)));
-                $outbody .= html_writer::start_div('chart', array('id' => 'chart_seq_'.$counter));
+                $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
+                $outbody .= html_writer::start_div('chart', ['id' => 'chart_seq_' . $counter]);
                 $outbody .= $this->output->heading($title, 2);
                 if (is_array($content)) {
                     foreach ($content as $subtitle => $subcontent) {
@@ -61,11 +70,10 @@ class report_overviewstats_renderer extends plugin_renderer_base {
                 }
                 $outbody .= html_writer::end_div();
             }
-
         }
 
-        $out  = $this->output->header();
-        $out .= html_writer::start_tag('ul', array('class' => 'chartslist'));
+        $out = $this->output->header();
+        $out .= html_writer::start_tag('ul', ['class' => 'chartslist']);
         $out .= $outlist;
         $out .= html_writer::end_tag('ul');
         $out .= html_writer::div($outbody, 'charts');

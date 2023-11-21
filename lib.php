@@ -17,12 +17,12 @@
 /**
  * Provides the report plugin interface for the core
  *
- * @package     report_overviewstats
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * This function extends the navigation with the report items
@@ -35,7 +35,7 @@ function report_overviewstats_extend_navigation_course($navigation, $course, $co
     global $CFG;
 
     if (has_capability('report/overviewstats:view', $context)) {
-        $url = new moodle_url('/report/overviewstats/index.php', array('course' => $course->id));
+        $url = new moodle_url('/report/overviewstats/index.php', ['course' => $course->id]);
         $navigation->add(get_string('pluginname', 'report_overviewstats'), $url, navigation_node::TYPE_SETTING,
             null, null, new pix_icon('icon', '', 'report_overviewstats'));
     }

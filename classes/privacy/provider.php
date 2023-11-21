@@ -13,25 +13,18 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-/**
- * Privacy provider.
- *
- * @package    report_overviewstats
- * @copyright  2021 Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ /**
+  * Privacy provider.
+  *
+  * @package report_overviewstats
+  * @author DualCube <admin@dualcube.com>
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 
 namespace report_overviewstats\privacy;
 
-defined('MOODLE_INTERNAL') || die();
-
-/**
- * Privacy provider.
- *
- * @package    report_overviewstats
- * @copyright  2021 Mikhail Golenkov <mikhailgolenkov@catalyst-au.net>
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
 class provider implements \core_privacy\local\metadata\null_provider {
 
     /**
@@ -40,7 +33,7 @@ class provider implements \core_privacy\local\metadata\null_provider {
      *
      * @return  string
      */
-    public static function get_reason() : string {
+    public static function get_reason(): string {
         return 'privacy:metadata';
     }
 }

@@ -5,10 +5,9 @@ This [Moodle](http://moodle.org) add-on produces various site and course report
 charts.  The code has been designed in a way that makes adding more reports
 easy.
 
-For producing the graphs, [YUI Charts](http://yuilibrary.com/yui/docs/charts/)
+For producing the graphs, [Charts API](https://docs.moodle.org/dev/Charts_API)
 module is used.  The code is using modern Moodle development techniques and
-patterns, such as using LESS for producing CSS files and Shifter to compose the
-Javascript modules.
+patterns.
 
 Available site level reports
 ----------------------------
@@ -37,7 +36,5 @@ course based on estimated historical figures.
 
 Author
 ------
-
-This add-on is currently maintained by [Eric Bram](https://github.com/ericbram).
-
-It was written by David Mudrák <david@moodle.com>, [@mudrd8mz](http://twitter.com/mudrd8mz).
+This add-on is currently maintained by [DualCube](https://github.com/dualcube).
+It was written by David Mudrák david@moodle.com, @mudrd8mz.

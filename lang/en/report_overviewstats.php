@@ -14,14 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Provides a list of strings for the plugin
- * 
- * @package     report_verviewstats
- * @category    string
- * @copyright   2013 David Mudrak <david@moodle.com>
- * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ /**
+  * Provides a list of strings for the plugin
+  *
+  * @package report_verviewstats
+  * @category string
+  * @author DualCube <admin@dualcube.com>
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -44,3 +46,8 @@ $string['chart-logins'] = 'Users logging in';
 $string['chart-logins-perday'] = 'Per day';
 $string['overviewstats:view'] = 'View overview statistics';
 $string['privacy:metadata'] = 'The Overview statistics plugin does not store any personal data.';
+$string['user-numbers'] = 'Number of users';
+$string['course-numbers'] = 'Number of course';
+$string['enrolled'] = 'Enrolled';
+$string['course-level-report-exception'] = 'Course level report invoked without the reference to the course!';
+$string['Unexpected-symlink-exception'] = 'Unexpected symlink in report/overviewstats/classes/';
