@@ -32,15 +32,24 @@ class report_overviewstats_chart {
         $title = get_string('chart-logins', 'report_overviewstats');
         $titleperday = get_string('chart-logins-perday', 'report_overviewstats');
 
-        return [$title => [
-            $titleperday => html_writer::tag('div', self::get_chart(new \core\chart_line(), 'Logedins', $maindata['loggedins'],
-            $maindata['dates'], false), [
-                'id' => 'chart_logins_perday',
-                'class' => 'chartplaceholder',
-                'style' => 'min-height: 300px;',
-                'dir' => 'ltr',
-            ]),
-        ], ];
+        return [
+            $title => [
+                $titleperday => html_writer::tag('div',
+                    self::get_chart(new \core\chart_line(),
+                        get_string('user-numbers', 'report_overviewstats'),
+                        $maindata['loggedins'],
+                        $maindata['dates'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_logins_perday',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                        'dir' => 'ltr',
+                    ]
+                ),
+            ],
+        ];
     }
 
     /**
@@ -68,9 +77,9 @@ class report_overviewstats_chart {
                 'guestid' => $CFG->siteguest,
                 'timestart' => $now - 30 * DAYSECS, ];
             $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
-            $rs = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+            $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
-            foreach ($rs as $record) {
+            foreach ($recordset as $record) {
                 foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
                     $date = usergetdate($timestamp);
                     if ($record->timecreated >= $timestamp) {
@@ -86,9 +95,9 @@ class report_overviewstats_chart {
 
             $params = ['timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest];
 
-            $rs = $DB->get_recordset_sql($sql, $params);
+            $recordset = $DB->get_recordset_sql($sql, $params);
 
-            foreach ($rs as $record) {
+            foreach ($recordset as $record) {
                 foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
                     $date = usergetdate($timestamp);
                     if ($record->time >= $timestamp) {
@@ -97,7 +106,7 @@ class report_overviewstats_chart {
                     }
                 }
             }
-            $rs->close();
+            $recordset->close();
         }
         $maindata = [
             'dates' => [],
@@ -125,12 +134,20 @@ class report_overviewstats_chart {
             'report_overviewstats', count($maindata['counts'])),
             'chartinfo');
         $chart = html_writer::tag('div',
-            self::get_chart(new \core\chart_bar(), 'Nuber of user', $maindata['counts'], $maindata['countrys'], true), [
-            'id' => 'chart_countries',
-            'class' => 'chartplaceholder',
-            'style' => 'min-height: ' . max(66, (count($maindata['counts']) * 20)) . 'px;',
-            'dir' => 'ltr',
-        ]);
+            self::get_chart(
+                new \core\chart_bar(),
+                get_string('user-numbers', 'report_overviewstats'),
+                $maindata['counts'],
+                $maindata['countrys'],
+                true
+            ),
+            [
+                'id' => 'chart_countries',
+                'class' => 'chartplaceholder',
+                'style' => 'min-height: ' . max(66, (count($maindata['counts']) * 20)) . 'px;',
+                'dir' => 'ltr',
+            ]
+        );
 
         return [$title => $info . $chart];
     }
@@ -172,12 +189,20 @@ class report_overviewstats_chart {
         $title = get_string('chart-langs', 'report_overviewstats');
         $info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($maindata['counts'])), 'chartinfo');
         $chart = html_writer::tag('div',
-            self::get_chart(new \core\chart_bar(), 'Nuber of user', $maindata['counts'], $maindata['languages'], true), [
-            'id' => 'chart_langs',
-            'class' => 'chartplaceholder',
-            'style' => 'min-height: ' . max(66, (count($maindata['counts']) * 20)) . 'px;',
-            'dir' => 'ltr',
-        ]);
+            self::get_chart(
+                new \core\chart_bar(),
+                get_string('user-numbers', 'report_overviewstats'),
+                $maindata['counts'],
+                $maindata['languages'],
+                true
+            ),
+            [
+                'id' => 'chart_langs',
+                'class' => 'chartplaceholder',
+                'style' => 'min-height: ' . max(66, (count($maindata['counts']) * 20)) . 'px;',
+                'dir' => 'ltr',
+            ]
+        );
 
         return [$title => $info . $chart];
     }
@@ -239,27 +264,32 @@ class report_overviewstats_chart {
         $titlesizes = sprintf('%s %s', get_string('chart-courses-sizes', 'report_overviewstats'),
             $OUTPUT->help_icon('chart-courses-sizes', 'report_overviewstats'));
 
-        return [$title => [
-            $titlepercategory => html_writer::tag('div',
-                html_writer::table($percategorydata),
-                [
-                    'id' => 'chart_courses_percategory',
-                    'class' => 'simple_data_table',
-                ],
-            ),
-            $titlesizes => html_writer::tag('div',
-                self::get_chart(new \core\chart_bar(),
-                    'Nuber of courses',
-                    $maindata['sizes']['courses'],
-                    $maindata['sizes']['course_size'], false),
-                [
-                    'id' => 'chart_courses_sizes',
-                    'class' => 'chartplaceholder',
-                    'style' => 'min-height: 300px;',
-                    'dir' => 'ltr',
-                ],
-            ),
-        ], ];
+        return [
+            $title => [
+                $titlepercategory => html_writer::tag('div',
+                    html_writer::table($percategorydata),
+                    [
+                        'id' => 'chart_courses_percategory',
+                        'class' => 'simple_data_table',
+                    ],
+                ),
+                $titlesizes => html_writer::tag('div',
+                    self::get_chart(
+                        new \core\chart_bar(),
+                        get_string('course-numbers', 'report_overviewstats'),
+                        $maindata['sizes']['courses'],
+                        $maindata['sizes']['course_size'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_courses_sizes',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                        'dir' => 'ltr',
+                    ],
+                ),
+            ],
+        ];
     }
 
     /**
@@ -269,11 +299,11 @@ class report_overviewstats_chart {
         global $DB;
         $maindata = [];
         // Number of courses per category.
-        $cats = core_course_category::make_categories_list();
+        $categorieslist = core_course_category::make_categories_list();
         $maindata['percategory'] = [];
         $total = 0;
 
-        foreach ($cats as $catid => $catname) {
+        foreach ($categorieslist as $catid => $catname) {
             $cat = core_course_category::get($catid);
             $coursesown = $cat->get_courses_count();
             $total += $coursesown;
@@ -295,7 +325,7 @@ class report_overviewstats_chart {
                   FROM {course_modules}
               GROUP BY course";
 
-        $rs = $DB->get_recordset_sql($sql);
+        $recordset = $DB->get_recordset_sql($sql);
 
         $max = 0;
         $data = [];
@@ -304,7 +334,7 @@ class report_overviewstats_chart {
             'courses' => [],
         ];
 
-        foreach ($rs as $record) {
+        foreach ($recordset as $record) {
             $distributiongroup = floor($record->modules / 5); // 0 for 0-4, 1 for 5-9, 2 for 10-14 etc.
             if (!isset($data[$distributiongroup])) {
                 $data[$distributiongroup] = 1;
@@ -316,7 +346,7 @@ class report_overviewstats_chart {
             }
         }
 
-        $rs->close();
+        $recordset->close();
 
         for ($i = 0; $i <= $max; $i++) {
             if (!isset($data[$i])) {
@@ -344,39 +374,45 @@ class report_overviewstats_chart {
         $titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
         $titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
 
-        return [$title => [
-            $titlemonth => html_writer::tag('div',
-                self::get_chart(
-                    new \core\chart_line(),
-                    'Enrolled', $maindata['lastmonth']['enrolled'],
-                    $maindata['lastmonth']['date'],
-                    false
+        return [
+            $title => [
+                $titlemonth => html_writer::tag('div',
+                    self::get_chart(
+                        new \core\chart_line(),
+                        get_string('enrolled', 'report_overviewstats'),
+                        $maindata['lastmonth']['enrolled'],
+                        $maindata['lastmonth']['date'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_enrolments_lastmonth',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                    ]
                 ),
-                [
-                    'id' => 'chart_enrolments_lastmonth',
-                    'class' => 'chartplaceholder',
-                    'style' => 'min-height: 300px;',
-                ]),
-            $titleyear => html_writer::tag('div',
-                self::get_chart(
-                    new \core\chart_line(),
-                    'Enrolled', $maindata['lastyear']['enrolled'],
-                    $maindata['lastyear']['date'],
-                    false
+                $titleyear => html_writer::tag('div',
+                    self::get_chart(
+                        new \core\chart_line(),
+                        get_string('enrolled', 'report_overviewstats'),
+                        $maindata['lastyear']['enrolled'],
+                        $maindata['lastyear']['date'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_enrolments_lastyear',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                    ]
                 ),
-                [
-                    'id' => 'chart_enrolments_lastyear',
-                    'class' => 'chartplaceholder',
-                    'style' => 'min-height: 300px;',
-                ]),
-        ], ];
+            ],
+        ];
     }
 
     protected static function prepare_data_chart_enrollments($course) {
         global $DB, $CFG;
 
         if (is_null($course)) {
-            throw new coding_exception('Course level report invoked without the reference to the course!');
+            throw new coding_exception(get_string('course-level-report-exception', 'report_overviewstats'));
         }
 
         // Get the number of currently enrolled users.
@@ -469,9 +505,9 @@ class report_overviewstats_chart {
                 'courseid' => $course->id,
             ];
 
-            $rs = $DB->get_recordset_sql($sql, $params);
+            $recordset = $DB->get_recordset_sql($sql, $params);
 
-            foreach ($rs as $record) {
+            foreach ($recordset as $record) {
                 foreach (array_reverse($lastmonth, true) as $key => $value) {
                     if ($record->time >= $key) {
                         // We need to amend all days up to the key.
@@ -504,7 +540,7 @@ class report_overviewstats_chart {
                 }
             }
 
-            $rs->close();
+            $recordset->close();
         }
 
         $maindata = [

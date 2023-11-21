@@ -36,7 +36,7 @@ foreach ($classfiles as $classfile) {
         continue;
     }
     if ($classfile->isLink()) {
-        throw new coding_exception('Unexpected symlink in report/overviewstats/classes/');
+        throw new coding_exception(get_string('Unexpected-symlink-exception', 'report_overviewstats'));
     }
     if ($classfile->isFile() && substr($classfile->getFilename(), -4) === '.php') {
         require_once($classfile->getPathname());
