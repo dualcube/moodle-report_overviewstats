@@ -50,4 +50,3 @@ $string['user-numbers'] = 'Number of users';
 $string['course-numbers'] = 'Number of course';
 $string['enrolled'] = 'Enrolled';
 $string['null-course-exception'] = 'Course level report invoked without the reference to the course!';
-$string['link-exception'] = 'Unexpected symlink in report/overviewstats/classes/';
