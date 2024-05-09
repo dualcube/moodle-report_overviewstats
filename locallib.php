@@ -29,14 +29,14 @@ defined('MOODLE_INTERNAL') || die();
 // Need to load the base classes first so we can extend them.
 require_once($CFG->dirroot . '/report/overviewstats/classes/chart.php');
 
-// Load all classes files (to be replaced by autoloading in Moodle 2.6.
+// Load all classes files 
 $classfiles = new DirectoryIterator($CFG->dirroot . '/report/overviewstats/classes/');
 foreach ($classfiles as $classfile) {
     if ($classfile->isDot()) {
         continue;
     }
     if ($classfile->isLink()) {
-        throw new coding_exception(get_string('Unexpected-symlink-exception', 'report_overviewstats'));
+        throw new coding_exception(get_string('link-exception', 'report_overviewstats'));
     }
     if ($classfile->isFile() && substr($classfile->getFilename(), -4) === '.php') {
         require_once($classfile->getPathname());

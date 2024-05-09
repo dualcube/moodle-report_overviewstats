@@ -1,3 +1,9 @@
+### v1.6.1 ###
+
+* fixing bug of showing graph for course=1
+
+
+
 ### v1.6.0 ###
 
 * Added Support for moodle 4.3.

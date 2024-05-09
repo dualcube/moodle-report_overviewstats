@@ -417,7 +417,7 @@ class report_overviewstats_chart {
         global $DB, $CFG;
 
         if (is_null($course)) {
-            throw new coding_exception(get_string('course-level-report-exception', 'report_overviewstats'));
+            throw new coding_exception(get_string('null-course-exception', 'report_overviewstats'));
         }
 
         // Get the number of currently enrolled users.

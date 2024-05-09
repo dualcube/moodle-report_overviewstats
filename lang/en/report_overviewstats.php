@@ -49,5 +49,5 @@ $string['privacy:metadata'] = 'The overview statistics plugin does not store any
 $string['user-numbers'] = 'Number of users';
 $string['course-numbers'] = 'Number of course';
 $string['enrolled'] = 'Enrolled';
-$string['course-level-report-exception'] = 'Course level report invoked without the reference to the course!';
-$string['Unexpected-symlink-exception'] = 'Unexpected symlink in report/overviewstats/classes/';
+$string['null-course-exception'] = 'Course level report invoked without the reference to the course!';
+$string['link-exception'] = 'Unexpected symlink in report/overviewstats/classes/';
