@@ -26,7 +26,6 @@
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');
-require_once($CFG->dirroot . '/report/overviewstats/locallib.php');
 
 $courseid = optional_param('course', null, PARAM_INT);
 $course = null;

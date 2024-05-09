@@ -1,7 +1,7 @@
 ### v1.6.1 ###
 
-* fixing bug of showing graph for course=1
-
+* Fixed bug of showing graph for course=1
+* Removed Support to  locallib.php 
 
 
 ### v1.6.0 ###
