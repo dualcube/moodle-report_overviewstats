@@ -2,6 +2,7 @@
 
 * Fixed bug of showing graph for course=1
 * Removed Support to  locallib.php 
+* Removed support to lib.php
 
 
 ### v1.6.0 ###
