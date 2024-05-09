@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
  /**
-  * pluggin overviewstats
+  * plugin overviewstats
   *
   * @package report_overviewstats
   * @author DualCube <admin@dualcube.com>
