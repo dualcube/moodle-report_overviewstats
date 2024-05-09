@@ -7,7 +7,7 @@ easy.
 
 For producing the graphs, [Charts API](https://docs.moodle.org/dev/Charts_API)
 module is used.  The code is using modern Moodle development techniques and
-patterns.
+patterns.   
 
 Available site level reports
 ----------------------------

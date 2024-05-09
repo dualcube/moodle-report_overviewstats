@@ -17,7 +17,6 @@
  /**
   * HTML rendering methods are defined here
   *
-  * @package report_overviewstats
   * @category output
   * @package report_overviewstats
   * @copyright 2023 DualCube <admin@dualcube.com>
@@ -25,9 +24,15 @@
   * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
   */
 
-/**
- * Overview statistics renderer
- */
+ /**
+  * Overview statistics renderer
+  *
+  * @category output
+  * @package report_overviewstats
+  * @copyright 2023 DualCube <admin@dualcube.com>
+  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+  */
 class report_overviewstats_renderer extends plugin_renderer_base {
 
     /**

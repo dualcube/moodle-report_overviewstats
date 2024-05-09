@@ -41,7 +41,9 @@ if (is_null($courseid)) {
 
     require_login($course, false);
     require_capability('report/overviewstats:view', $context);
-
+    if ($course->id == 1) {
+        redirect(new moodle_url('/'));
+    }
     $PAGE->set_url(new moodle_url('/report/overviewstats/index.php', ['course' => $course->id]));
     $PAGE->set_pagelayout('report');
     $PAGE->set_title($course->shortname . ' - ' . get_string('pluginname', 'report_overviewstats'));

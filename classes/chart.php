@@ -15,7 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
  /**
-  * Base class for all charts to be reported
+  * pluggin overviewstats
+  *
   * @package report_overviewstats
   * @author DualCube <admin@dualcube.com>
   * @copyright 2023 DualCube <admin@dualcube.com>
@@ -23,8 +24,19 @@
   * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
   */
 
+  /**
+   * Base class for all charts to be reported
+   *
+   * @package report_overviewstats
+   * @author DualCube <admin@dualcube.com>
+   * @copyright 2023 DualCube <admin@dualcube.com>
+   * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+   * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+   */
 class report_overviewstats_chart {
     /**
+     * create login for login chart
+     *
      * @return array
      */
     public static function report_overviewstats_chart_logins() {
@@ -53,60 +65,36 @@ class report_overviewstats_chart {
     }
 
     /**
+     * prepare data for login perday chart
+     *
      * @return array
      */
     protected static function prepare_data_login_parday_chart() {
         global $DB, $CFG;
 
         $now = strtotime('today midnight');
-
         $lastmonth = [];
         for ($i = 30; $i >= 0; $i--) {
             $lastmonth[$now - $i * DAYSECS] = [];
         }
-        if ($CFG->branch >= 27) {
-            $logmanger = get_log_manager();
-            if ($CFG->branch >= 29) {
-                $readers = $logmanger->get_readers('\core\log\sql_reader');
-            } else {
-                $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            }
-            $reader = reset($readers);
-            $params = ['component' => 'core',
-                'eventname' => '\core\event\user_loggedin',
-                'guestid' => $CFG->siteguest,
-                'timestart' => $now - 30 * DAYSECS, ];
-            $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
-            $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        $logmanger = get_log_manager();
+        $readers = $logmanger->get_readers('\core\log\sql_reader');
+        $reader = reset($readers);
+        $params = ['component' => 'core',
+            'eventname' => '\core\event\user_loggedin',
+            'guestid' => $CFG->siteguest,
+            'timestart' => $now - 30 * DAYSECS, ];
+        $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
+        $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
-            foreach ($recordset as $record) {
-                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                    $date = usergetdate($timestamp);
-                    if ($record->timecreated >= $timestamp) {
-                        $lastmonth[$timestamp][$record->userid] = true;
-                        break;
-                    }
+        foreach ($recordset as $record) {
+            foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
+                $date = usergetdate($timestamp);
+                if ($record->timecreated >= $timestamp) {
+                    $lastmonth[$timestamp][$record->userid] = true;
+                    break;
                 }
             }
-        } else {
-            $sql = "SELECT time, userid
-                      FROM {log}
-                     WHERE time >= :timestart AND userid <> :guestid AND action = 'login'";
-
-            $params = ['timestart' => $now - 30 * DAYSECS, 'guestid' => $CFG->siteguest];
-
-            $recordset = $DB->get_recordset_sql($sql, $params);
-
-            foreach ($recordset as $record) {
-                foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                    $date = usergetdate($timestamp);
-                    if ($record->time >= $timestamp) {
-                        $lastmonth[$timestamp][$record->userid] = true;
-                        break;
-                    }
-                }
-            }
-            $recordset->close();
         }
         $maindata = [
             'dates' => [],
@@ -123,11 +111,12 @@ class report_overviewstats_chart {
     }
 
     /**
+     * create chart for countries
+     *
      * @return array
      */
     public static function report_overviewstats_chart_countries() {
         $maindata = self::prepare_data_chart_countries();
-
         $title = get_string('chart-countries', 'report_overviewstats');
         $info = html_writer::div(
             get_string('chart-countries-info',
@@ -153,6 +142,8 @@ class report_overviewstats_chart {
     }
 
     /**
+     * prepaire data for country chart
+     *
      * @return array
      */
     protected static function prepare_data_chart_countries() {
@@ -181,6 +172,8 @@ class report_overviewstats_chart {
     }
 
     /**
+     * create the language chart
+     *
      * @return array
      */
     public static function report_overviewstats_chart_langs() {
@@ -208,11 +201,12 @@ class report_overviewstats_chart {
     }
 
     /**
+     * prepare data for language chart
+     *
      * @return array
      */
     protected static function prepare_data_chart_langs() {
         global $DB;
-
         $sql = "SELECT lang, COUNT(*)
                   FROM {user}
                  WHERE deleted = 0 AND confirmed = 1
@@ -237,6 +231,8 @@ class report_overviewstats_chart {
     }
 
     /**
+     * create the chart for courses
+     *
      * @return array
      */
     public static function report_overviewstats_chart_courses() {
@@ -293,6 +289,8 @@ class report_overviewstats_chart {
     }
 
     /**
+     * prepaire data for course chart
+     *
      * @return array
      */
     protected static function prepare_data_chart_courses() {
@@ -365,6 +363,8 @@ class report_overviewstats_chart {
     }
 
     /**
+     * create enrolment chart
+     *
      * @return array
      */
     public static function report_overviewstats_chart_enrolments($course) {
@@ -408,6 +408,11 @@ class report_overviewstats_chart {
         ];
     }
 
+    /**
+     * prepare chart enrolments data
+     *
+     * @return array
+     */
     protected static function prepare_data_chart_enrollments($course) {
         global $DB, $CFG;
 
@@ -442,105 +447,51 @@ class report_overviewstats_chart {
         }
 
         // Fetch all the enrol/unrol log entries from the last year.
-        if ($CFG->branch >= 27) {
+        $logmanger = get_log_manager();
+        $readers = $logmanger->get_readers('\core\log\sql_reader');
+        $reader = reset($readers);
+        $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) ".
+        "AND timecreated >= :timestart AND courseid = :courseid";
+        $params = [
+            'component' => 'core',
+            'eventname1' => '\core\event\user_enrolment_created',
+            'eventname2' => '\core\event\user_enrolment_deleted',
+            'timestart' => $now - 30 * DAYSECS,
+            'courseid' => $course->id,
+        ];
+        $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
-            $logmanger = get_log_manager();
-            if ($CFG->branch >= 29) {
-                $readers = $logmanger->get_readers('\core\log\sql_reader');
-            } else {
-                $readers = $logmanger->get_readers('\core\log\sql_select_reader');
-            }
-            $reader = reset($readers);
-            $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) ".
-            "AND timecreated >= :timestart AND courseid = :courseid";
-            $params = [
-                'component' => 'core',
-                'eventname1' => '\core\event\user_enrolment_created',
-                'eventname2' => '\core\event\user_enrolment_deleted',
-                'timestart' => $now - 30 * DAYSECS,
-                'courseid' => $course->id,
-            ];
-            $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
-
-            foreach ($events as $event) {
-                foreach (array_reverse($lastmonth, true) as $key => $value) {
-                    if ($event->timecreated >= $key) {
-                        // We need to amend all days up to the key.
-                        foreach ($lastmonth as $mkey => $mvalue) {
-                            if ($mkey <= $key) {
-                                if ($event->eventname === '\core\event\user_enrolment_created' && $lastmonth[$mkey] > 0) {
-                                    $lastmonth[$mkey]--;
-                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                    $lastmonth[$mkey]++;
-                                }
+        foreach ($events as $event) {
+            foreach (array_reverse($lastmonth, true) as $key => $value) {
+                if ($event->timecreated >= $key) {
+                    // We need to amend all days up to the key.
+                    foreach ($lastmonth as $mkey => $mvalue) {
+                        if ($mkey <= $key) {
+                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastmonth[$mkey] > 0) {
+                                $lastmonth[$mkey]--;
+                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                                $lastmonth[$mkey]++;
                             }
                         }
-                        break;
                     }
-                }
-                foreach (array_reverse($lastyear, true) as $key => $value) {
-                    if ($event->timecreated >= $key) {
-                        // We need to amend all months up to the key.
-                        foreach ($lastyear as $ykey => $yvalue) {
-                            if ($ykey <= $key) {
-                                if ($event->eventname === '\core\event\user_enrolment_created' && $lastyear[$ykey] > 0) {
-                                    $lastyear[$ykey]--;
-                                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                    $lastyear[$ykey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
-
-        } else {
-            $sql = "SELECT time, action
-                      FROM {log}
-                     WHERE time >= :timestart AND course = :courseid AND (action = 'enrol' OR action = 'unenrol')";
-
-            $params = [
-                'timestart' => $now - YEARSECS,
-                'courseid' => $course->id,
-            ];
-
-            $recordset = $DB->get_recordset_sql($sql, $params);
-
-            foreach ($recordset as $record) {
-                foreach (array_reverse($lastmonth, true) as $key => $value) {
-                    if ($record->time >= $key) {
-                        // We need to amend all days up to the key.
-                        foreach ($lastmonth as $mkey => $mvalue) {
-                            if ($mkey <= $key) {
-                                if ($record->action === 'enrol' && $lastmonth[$mkey] > 0) {
-                                    $lastmonth[$mkey]--;
-                                } else if ($record->action === 'unenrol') {
-                                    $lastmonth[$mkey]++;
-                                }
+            foreach (array_reverse($lastyear, true) as $key => $value) {
+                if ($event->timecreated >= $key) {
+                    // We need to amend all months up to the key.
+                    foreach ($lastyear as $ykey => $yvalue) {
+                        if ($ykey <= $key) {
+                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastyear[$ykey] > 0) {
+                                $lastyear[$ykey]--;
+                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                                $lastyear[$ykey]++;
                             }
                         }
-                        break;
                     }
-                }
-                foreach (array_reverse($lastyear, true) as $key => $value) {
-                    if ($record->time >= $key) {
-                        // We need to amend all months up to the key.
-                        foreach ($lastyear as $ykey => $yvalue) {
-                            if ($ykey <= $key) {
-                                if ($record->action === 'enrol' && $lastyear[$ykey] > 0) {
-                                    $lastyear[$ykey]--;
-                                } else if ($record->action === 'unenrol') {
-                                    $lastyear[$ykey]++;
-                                }
-                            }
-                        }
-                        break;
-                    }
+                    break;
                 }
             }
-
-            $recordset->close();
         }
 
         $maindata = [
@@ -565,12 +516,18 @@ class report_overviewstats_chart {
             $maindata['lastyear']['date'][] = $date;
             $maindata['lastyear']['enrolled'][] = $enrolled;
         }
-
         return $maindata;
     }
 
     /**
-     * @return chart html
+     * create chart function based on inputes
+     *
+     * @param \core\chart_line $chart
+     * @param string $seriesname
+     * @param array $seriesdata
+     * @param array $labelsdata
+     * @param bool $ishorizontal
+     * @return chart
      */
     protected static function get_chart($chart, $seriesname, $seriesdata, $labelsdata, $ishorizontal) {
         global $OUTPUT;
