@@ -1,8 +1,7 @@
 ### v1.6.1 ###
 
-* Fixed bug of showing graph for course=1
-* Removed Support to  locallib.php 
-* Removed support to lib.php
+* Fix - Report disabled for site as a course (i.e. when course is 1)
+* Fix - Removed deprecated lib files
 
 
 ### v1.6.0 ###
