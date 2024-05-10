@@ -1,3 +1,9 @@
+### v1.6.1 ###
+
+* Fix - Report disabled for site as a course (i.e. when course is 1)
+* Fix - Removed deprecated lib files
+* Giving support to only moodle 4.0 and  upper versions
+
 ### v1.6.0 ###
 
 * Added Support for moodle 4.3.

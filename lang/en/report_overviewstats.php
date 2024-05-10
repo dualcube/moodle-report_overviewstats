@@ -17,7 +17,7 @@
  /**
   * Provides a list of strings for the plugin
   *
-  * @package report_verviewstats
+  * @package report_overviewstats
   * @category string
   * @author DualCube <admin@dualcube.com>
   * @copyright 2023 DualCube <admin@dualcube.com>
@@ -45,9 +45,8 @@ $string['chart-langs-info'] = 'Number of different languages: {$a}';
 $string['chart-logins'] = 'Users logging in';
 $string['chart-logins-perday'] = 'Per day';
 $string['overviewstats:view'] = 'View overview statistics';
-$string['privacy:metadata'] = 'The Overview statistics plugin does not store any personal data.';
+$string['privacy:metadata'] = 'The overview statistics plugin does not store any personal data.';
 $string['user-numbers'] = 'Number of users';
 $string['course-numbers'] = 'Number of course';
 $string['enrolled'] = 'Enrolled';
-$string['course-level-report-exception'] = 'Course level report invoked without the reference to the course!';
-$string['Unexpected-symlink-exception'] = 'Unexpected symlink in report/overviewstats/classes/';
+$string['null-course-exception'] = 'Course level report invoked without the reference to the course!';

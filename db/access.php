@@ -15,6 +15,8 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
  /**
+  * access capabilities describe
+  *
   * @package report_overviewstats
   * @category access
   * @author DualCube <admin@dualcube.com>

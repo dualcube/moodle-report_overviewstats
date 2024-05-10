@@ -32,7 +32,6 @@
  * @param stdClass $context The context of the course
  */
 function report_overviewstats_extend_navigation_course($navigation, $course, $context) {
-    global $CFG;
 
     if (has_capability('report/overviewstats:view', $context)) {
         $url = new moodle_url('/report/overviewstats/index.php', ['course' => $course->id]);
