@@ -28,6 +28,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'report_overviewstats';
 $plugin->release = 'v1.6.1';
-$plugin->version = 2024051000;
-$plugin->requires = 2022041900; // Moodle 4.0.
+$plugin->version = 2025010900;
+$plugin->requires = 2022112815; // Moodle 4.1.
 $plugin->maturity = MATURITY_STABLE;
