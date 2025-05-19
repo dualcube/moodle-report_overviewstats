@@ -434,7 +434,7 @@ class report_overviewstats_chart {
         // Construct the estimated number of enrolled users in the last month
         // and the last year using the current number and the log records.
 
-        $now = time();
+        $now = usergetmidnight(time(),core_date::get_user_timezone());
 
         $lastmonth = [];
         for ($i = 30; $i >= 0; $i--) {
@@ -456,14 +456,14 @@ class report_overviewstats_chart {
             'component' => 'core',
             'eventname1' => '\core\event\user_enrolment_created',
             'eventname2' => '\core\event\user_enrolment_deleted',
-            'timestart' => $now - 30 * DAYSECS,
+            'timestart' => $now - 360 * DAYSECS,
             'courseid' => $course->id,
         ];
         $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
         foreach ($events as $event) {
             foreach (array_reverse($lastmonth, true) as $key => $value) {
-                if ($event->timecreated >= $key) {
+                if ($event->timecreated >= $key + DAYSECS) {
                     // We need to amend all days up to the key.
                     foreach ($lastmonth as $mkey => $mvalue) {
                         if ($mkey <= $key) {
@@ -478,7 +478,7 @@ class report_overviewstats_chart {
                 }
             }
             foreach (array_reverse($lastyear, true) as $key => $value) {
-                if ($event->timecreated >= $key) {
+                if ($event->timecreated >= $key + DAYSECS) {
                     // We need to amend all months up to the key.
                     foreach ($lastyear as $ykey => $yvalue) {
                         if ($ykey <= $key) {
