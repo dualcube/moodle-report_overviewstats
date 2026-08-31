@@ -25,8 +25,8 @@ use report_overviewstats\chart;
  *
  * @category output
  * @package report_overviewstats
+ * @copyright 2013 David Mudrak <david@moodle.com>
  * @copyright 2023 DualCube <admin@dualcube.com>
- * @copyright based on work by 2013 David Mudrak <david@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends plugin_renderer_base {

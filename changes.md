@@ -4,6 +4,11 @@
   group (issue #22): a group selector now appears on the course report
   when the course uses groups, filtering the "Enrolled users" chart to
   the selected group.
+* Fixed - Restored David Mudrak's original `@copyright 2013` notice as its
+  own standalone line in every file's header, alongside DualCube's. It had
+  been replaced outright in a 2023 commit and only partially/informally
+  restored (as a "based on work by" note) shortly after; it's now a proper
+  second `@copyright` line per standard convention for derivative works.
 
 ### v1.7.0 ###
 

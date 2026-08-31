@@ -21,8 +21,8 @@ namespace report_overviewstats\privacy;
  *
  * @package report_overviewstats
  * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
  * @copyright 2023 DualCube <admin@dualcube.com>
- * @copyright based on work by 2013 David Mudrak <david@moodle.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class provider implements \core_privacy\local\metadata\null_provider {
