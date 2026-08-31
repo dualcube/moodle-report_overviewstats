@@ -38,6 +38,7 @@ $string['chart-courses-percategory-coursesown'] = 'Courses (own only)';
 $string['chart-courses-sizes'] = 'Number of courses per size';
 $string['chart-courses-sizes_help'] = 'Displays the distribution graph of number of activities per course. That is, how many courses are there with 0-4 activities, 5-9 activities, 10-14 activities etc.';
 $string['chart-enrolments'] = 'Enrolled users';
+$string['chart-enrolments-group'] = 'Enrolled users ({$a})';
 $string['chart-enrolments-month'] = 'Last month';
 $string['chart-enrolments-year'] = 'Last year';
 $string['chart-langs'] = 'User preferred languages';

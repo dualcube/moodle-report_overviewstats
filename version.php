@@ -27,7 +27,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'report_overviewstats';
-$plugin->release = 'v1.7.0';
-$plugin->version = 2026083100;
+$plugin->release = 'v1.8.0';
+$plugin->version = 2026090100;
 $plugin->requires = 2026042000; // Moodle 5.2.
 $plugin->maturity = MATURITY_STABLE;

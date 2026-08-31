@@ -34,9 +34,10 @@ class renderer extends plugin_renderer_base {
      * Render the report charts
      *
      * @param \stdClass|null $course
+     * @param int $groupid id of the group to filter the course-level report by, or 0 for all participants
      * @return string
      */
-    public function charts($course) {
+    public function charts($course, $groupid = 0) {
         $chartsdata = [];
         if (is_null($course)) {
             $chartsdata[] = chart::logins();
@@ -44,7 +45,7 @@ class renderer extends plugin_renderer_base {
             $chartsdata[] = chart::langs();
             $chartsdata[] = chart::courses();
         } else {
-            $chartsdata[] = chart::enrolments($course);
+            $chartsdata[] = chart::enrolments($course, $groupid);
         }
 
         $outlist = '';
@@ -72,6 +73,9 @@ class renderer extends plugin_renderer_base {
         }
 
         $out = $this->output->header();
+        if (!is_null($course) && groups_get_course_groupmode($course) != NOGROUPS) {
+            $out .= groups_print_course_menu($course, $this->page->url, true);
+        }
         $out .= html_writer::start_tag('ul', ['class' => 'chartslist']);
         $out .= $outlist;
         $out .= html_writer::end_tag('ul');

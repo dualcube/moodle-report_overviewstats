@@ -1,3 +1,10 @@
+### v1.8.0 ###
+
+* Added - Support for displaying the course-level enrolments report per
+  group (issue #22): a group selector now appears on the course report
+  when the course uses groups, filtering the "Enrolled users" chart to
+  the selected group.
+
 ### v1.7.0 ###
 
 * Added - Declared support for Moodle 5.2.

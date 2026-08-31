@@ -371,12 +371,17 @@ class chart {
      * create enrolment chart
      *
      * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
      * @return array
      */
-    public static function enrolments($course) {
-        $maindata = self::prepare_data_chart_enrollments($course);
+    public static function enrolments($course, $groupid = 0) {
+        $maindata = self::prepare_data_chart_enrollments($course, $groupid);
 
-        $title = get_string('chart-enrolments', 'report_overviewstats');
+        if ($groupid) {
+            $title = get_string('chart-enrolments-group', 'report_overviewstats', groups_get_group_name($groupid));
+        } else {
+            $title = get_string('chart-enrolments', 'report_overviewstats');
+        }
         $titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
         $titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
 
@@ -420,9 +425,10 @@ class chart {
      * prepare chart enrolments data
      *
      * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
      * @return array
      */
-    protected static function prepare_data_chart_enrollments($course) {
+    protected static function prepare_data_chart_enrollments($course, $groupid = 0) {
         global $DB, $CFG;
 
         if (is_null($course)) {
@@ -432,13 +438,20 @@ class chart {
         // Get the number of currently enrolled users.
 
         $context = \context_course::instance($course->id);
-        [$esql, $params] = get_enrolled_sql($context);
+        [$esql, $params] = get_enrolled_sql($context, '', $groupid);
         $sql = "SELECT COUNT(u.id)
                   FROM {user} u
                   JOIN ($esql) je ON je.id = u.id
                  WHERE u.deleted = 0";
 
         $current = $DB->count_records_sql($sql, $params);
+
+        // The log-based delta below can only attribute an enrol/unenrol event
+        // to a group using the affected user's CURRENT group membership,
+        // since historical membership isn't recorded - this is consistent
+        // with the rest of this method already projecting today's numbers
+        // backwards using the log records, rather than tracking exact history.
+        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
 
         // Construct the estimated number of enrolled users in the last month
         // and the last year using the current number and the log records.
@@ -471,6 +484,9 @@ class chart {
         $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
 
         foreach ($events as $event) {
+            if ($groupid && !isset($groupmemberids[$event->relateduserid])) {
+                continue;
+            }
             foreach (array_reverse($lastmonth, true) as $key => $value) {
                 if ($event->timecreated >= $key + DAYSECS) {
                     // We need to amend all days up to the key.

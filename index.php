@@ -47,8 +47,14 @@ if (is_null($courseid)) {
     $PAGE->set_pagelayout('report');
     $PAGE->set_title($course->shortname . ' - ' . get_string('pluginname', 'report_overviewstats'));
     $PAGE->set_heading($course->fullname . ' - ' . get_string('pluginname', 'report_overviewstats'));
+
+    // Groups not used in this course results in false, treat that the same as "all participants".
+    $groupid = groups_get_course_group($course, true);
+    if ($groupid === false) {
+        $groupid = 0;
+    }
 }
 
 $output = $PAGE->get_renderer('report_overviewstats');
 
-echo $output->charts($course);
+echo $output->charts($course, $groupid ?? 0);
