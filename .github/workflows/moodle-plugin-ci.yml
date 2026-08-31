@@ -24,6 +24,19 @@ jobs:
         php: ['8.4']
         moodle-branch: ['MOODLE_502_STABLE']
         database: [mariadb]
+        experimental: [false]
+        # Moodle 5.3 has no stable branch yet (still MATURITY_ALPHA on `main`
+        # as of writing), so it is not a supported target for $plugin->requires.
+        # Testing against `main` here is just an early-warning canary for
+        # when 5.3 does stabilise; `experimental: true` below keeps a break
+        # in it from failing the required "test" job.
+        include:
+          - php: '8.4'
+            moodle-branch: main
+            database: mariadb
+            experimental: true
+
+    continue-on-error: ${{ matrix.experimental }}
 
     steps:
       # The repository is named "moodle-report_<slug>" by convention; the plugin
@@ -132,7 +145,7 @@ jobs:
         if: ${{ failure() && steps.behat.outcome == 'failure' }}
         uses: actions/upload-artifact@v4
         with:
-          name: Behat Faildump (${{ matrix.php }}, ${{ matrix.database }})
+          name: Behat Faildump (${{ matrix.php }}, ${{ matrix.moodle-branch }}, ${{ matrix.database }})
           path: ${{ github.workspace }}/moodledata/behat_dump
           retention-days: 7
           if-no-files-found: ignore
