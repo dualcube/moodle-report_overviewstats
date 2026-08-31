@@ -1,3 +1,15 @@
+### v1.7.0 ###
+
+* Added - Declared support for Moodle 5.2.
+* Changed - Modernized code to current Moodle coding style: namespaced
+  `report_overviewstats\chart` (formerly the Frankenstyle-prefixed
+  `report_overviewstats_chart`) and moved the renderer to
+  `classes/output/renderer.php` as `report_overviewstats\output\renderer`.
+* Fixed - Minor coding style issues (short array destructuring, spacing,
+  duplicated file/class docblocks).
+* Fixed - All Moodle Code Checker (phpcs `moodle` standard) errors; the
+  plugin now passes `moodle-plugin-ci phpcs` cleanly.
+
 ### v1.6.1 ###
 
 * Fixed - Report disabled for site as a course (i.e. when course is 1)

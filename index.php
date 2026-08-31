@@ -14,15 +14,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * Displays some overview statistics for the site
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+/**
+ * Displays some overview statistics for the site
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require(__DIR__ . '/../../config.php');
 require_once($CFG->libdir . '/adminlib.php');

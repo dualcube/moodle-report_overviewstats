@@ -14,40 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * plugin overviewstats
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+namespace report_overviewstats;
 
-  /**
-   * Base class for all charts to be reported
-   *
-   * @package report_overviewstats
-   * @author DualCube <admin@dualcube.com>
-   * @copyright 2023 DualCube <admin@dualcube.com>
-   * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-   * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-   */
-class report_overviewstats_chart {
+/**
+ * Base class for all charts to be reported.
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @copyright based on work by 2013 David Mudrak <david@moodle.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class chart {
     /**
      * create login for login chart
      *
      * @return array
      */
-    public static function report_overviewstats_chart_logins() {
+    public static function logins() {
         $maindata = self::prepare_data_login_parday_chart();
         $title = get_string('chart-logins', 'report_overviewstats');
         $titleperday = get_string('chart-logins-perday', 'report_overviewstats');
 
         return [
             $title => [
-                $titleperday => html_writer::tag('div',
-                    self::get_chart(new \core\chart_line(),
+                $titleperday => \html_writer::tag(
+                    'div',
+                    self::get_chart(
+                        new \core\chart_line(),
                         get_string('user-numbers', 'report_overviewstats'),
                         $maindata['loggedins'],
                         $maindata['dates'],
@@ -115,14 +109,19 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_countries() {
+    public static function countries() {
         $maindata = self::prepare_data_chart_countries();
         $title = get_string('chart-countries', 'report_overviewstats');
-        $info = html_writer::div(
-            get_string('chart-countries-info',
-            'report_overviewstats', count($maindata['counts'])),
-            'chartinfo');
-        $chart = html_writer::tag('div',
+        $info = \html_writer::div(
+            get_string(
+                'chart-countries-info',
+                'report_overviewstats',
+                count($maindata['counts'])
+            ),
+            'chartinfo'
+        );
+        $chart = \html_writer::tag(
+            'div',
             self::get_chart(
                 new \core\chart_bar(),
                 get_string('user-numbers', 'report_overviewstats'),
@@ -176,12 +175,13 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_langs() {
+    public static function langs() {
         $maindata = self::prepare_data_chart_langs();
 
         $title = get_string('chart-langs', 'report_overviewstats');
-        $info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($maindata['counts'])), 'chartinfo');
-        $chart = html_writer::tag('div',
+        $info = \html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($maindata['counts'])), 'chartinfo');
+        $chart = \html_writer::tag(
+            'div',
             self::get_chart(
                 new \core\chart_bar(),
                 get_string('user-numbers', 'report_overviewstats'),
@@ -235,7 +235,7 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_courses() {
+    public static function courses() {
         global $OUTPUT;
 
         $maindata = self::prepare_data_chart_courses();
@@ -243,33 +243,38 @@ class report_overviewstats_chart {
         $title = get_string('chart-courses', 'report_overviewstats');
         $titlepercategory = get_string('chart-courses-percategory', 'report_overviewstats');
 
-        $percategorydata = new html_table();
+        $percategorydata = new \html_table();
         $percategorydata->head = [
             get_string('chart-courses-percategory-categoryname', 'report_overviewstats'),
             get_string('chart-courses-percategory-coursesrecursive', 'report_overviewstats'),
             get_string('chart-courses-percategory-coursesown', 'report_overviewstats'),
         ];
         foreach ($maindata['percategory'] as $catdata) {
-            $percategorydata->data[] = new html_table_row([
+            $percategorydata->data[] = new \html_table_row([
                 $catdata['categoryname'],
                 $catdata['coursesrecursive'],
                 $catdata['coursesown'],
             ]);
         }
 
-        $titlesizes = sprintf('%s %s', get_string('chart-courses-sizes', 'report_overviewstats'),
-            $OUTPUT->help_icon('chart-courses-sizes', 'report_overviewstats'));
+        $titlesizes = sprintf(
+            '%s %s',
+            get_string('chart-courses-sizes', 'report_overviewstats'),
+            $OUTPUT->help_icon('chart-courses-sizes', 'report_overviewstats')
+        );
 
         return [
             $title => [
-                $titlepercategory => html_writer::tag('div',
-                    html_writer::table($percategorydata),
+                $titlepercategory => \html_writer::tag(
+                    'div',
+                    \html_writer::table($percategorydata),
                     [
                         'id' => 'chart_courses_percategory',
                         'class' => 'simple_data_table',
                     ],
                 ),
-                $titlesizes => html_writer::tag('div',
+                $titlesizes => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_bar(),
                         get_string('course-numbers', 'report_overviewstats'),
@@ -297,12 +302,12 @@ class report_overviewstats_chart {
         global $DB;
         $maindata = [];
         // Number of courses per category.
-        $categorieslist = core_course_category::make_categories_list();
+        $categorieslist = \core_course_category::make_categories_list();
         $maindata['percategory'] = [];
         $total = 0;
 
         foreach ($categorieslist as $catid => $catname) {
-            $cat = core_course_category::get($catid);
+            $cat = \core_course_category::get($catid);
             $coursesown = $cat->get_courses_count();
             $total += $coursesown;
             $maindata['percategory'][] = [
@@ -313,9 +318,9 @@ class report_overviewstats_chart {
         }
 
         $maindata['percategory'][] = [
-            'categoryname' => html_writer::tag('strong', get_string('total')),
+            'categoryname' => \html_writer::tag('strong', get_string('total')),
             'coursesrecursive' => '',
-            'coursesown' => html_writer::tag('strong', $total),
+            'coursesown' => \html_writer::tag('strong', $total),
         ];
 
         // Distribution graph of number of activities per course.
@@ -365,9 +370,10 @@ class report_overviewstats_chart {
     /**
      * create enrolment chart
      *
+     * @param \stdClass $course
      * @return array
      */
-    public static function report_overviewstats_chart_enrolments($course) {
+    public static function enrolments($course) {
         $maindata = self::prepare_data_chart_enrollments($course);
 
         $title = get_string('chart-enrolments', 'report_overviewstats');
@@ -376,7 +382,8 @@ class report_overviewstats_chart {
 
         return [
             $title => [
-                $titlemonth => html_writer::tag('div',
+                $titlemonth => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_line(),
                         get_string('enrolled', 'report_overviewstats'),
@@ -390,7 +397,8 @@ class report_overviewstats_chart {
                         'style' => 'min-height: 300px;',
                     ]
                 ),
-                $titleyear => html_writer::tag('div',
+                $titleyear => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_line(),
                         get_string('enrolled', 'report_overviewstats'),
@@ -411,19 +419,20 @@ class report_overviewstats_chart {
     /**
      * prepare chart enrolments data
      *
+     * @param \stdClass $course
      * @return array
      */
     protected static function prepare_data_chart_enrollments($course) {
         global $DB, $CFG;
 
         if (is_null($course)) {
-            throw new coding_exception(get_string('null-course-exception', 'report_overviewstats'));
+            throw new \coding_exception(get_string('null-course-exception', 'report_overviewstats'));
         }
 
         // Get the number of currently enrolled users.
 
-        $context = context_course::instance($course->id);
-        list($esql, $params) = get_enrolled_sql($context);
+        $context = \context_course::instance($course->id);
+        [$esql, $params] = get_enrolled_sql($context);
         $sql = "SELECT COUNT(u.id)
                   FROM {user} u
                   JOIN ($esql) je ON je.id = u.id
@@ -434,7 +443,7 @@ class report_overviewstats_chart {
         // Construct the estimated number of enrolled users in the last month
         // and the last year using the current number and the log records.
 
-        $now = usergetmidnight(time(),core_date::get_user_timezone());
+        $now = usergetmidnight(time(), \core_date::get_user_timezone());
 
         $lastmonth = [];
         for ($i = 30; $i >= 0; $i--) {
@@ -450,7 +459,7 @@ class report_overviewstats_chart {
         $logmanger = get_log_manager();
         $readers = $logmanger->get_readers('\core\log\sql_reader');
         $reader = reset($readers);
-        $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) ".
+        $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) " .
         "AND timecreated >= :timestart AND courseid = :courseid";
         $params = [
             'component' => 'core',
@@ -522,12 +531,12 @@ class report_overviewstats_chart {
     /**
      * create chart function based on inputes
      *
-     * @param \core\chart_line $chart
+     * @param \core\chart_base $chart
      * @param string $seriesname
      * @param array $seriesdata
      * @param array $labelsdata
      * @param bool $ishorizontal
-     * @return chart
+     * @return string
      */
     protected static function get_chart($chart, $seriesname, $seriesdata, $labelsdata, $ishorizontal) {
         global $OUTPUT;
