@@ -25,13 +25,16 @@
  */
 
 require(__DIR__ . '/../../config.php');
-require_once($CFG->libdir . '/adminlib.php');
 
 $courseid = optional_param('course', null, PARAM_INT);
 $course = null;
 
 if (is_null($courseid)) {
     // Site level reports.
+    // admin_externalpage_setup() is a procedural function, not a class, so Moodle's
+    // component autoloader can't lazily resolve it. Load adminlib.php only here,
+    // where it is actually needed, instead of unconditionally for every request.
+    require_once($CFG->libdir . '/adminlib.php');
     admin_externalpage_setup('overviewstats', '', null, '', ['pagelayout' => 'report']);
 } else {
     // Course level report.
