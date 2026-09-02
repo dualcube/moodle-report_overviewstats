@@ -14,20 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * Provides version and release information
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+/**
+ * Provides version and release information
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
+$plugin->version = 2026090200;
+$plugin->requires = 2025041400;
+// Tested against Moodle 5.0 through 5.3, including the 5.3dev branch (branches 500-530).
+$plugin->supported = [500, 530];
 $plugin->component = 'report_overviewstats';
-$plugin->release = 'v1.6.4';
-$plugin->version = 2025052900;
-$plugin->requires = 2024042200; // Moodle 4.4.
 $plugin->maturity = MATURITY_STABLE;
+$plugin->release = '1.7.0 (Build: 2026090200)';

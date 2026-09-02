@@ -14,51 +14,48 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * HTML rendering methods are defined here
-  *
-  * @category output
-  * @package report_overviewstats
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+namespace report_overviewstats\output;
 
- /**
-  * Overview statistics renderer
-  *
-  * @category output
-  * @package report_overviewstats
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
-class report_overviewstats_renderer extends plugin_renderer_base {
+use html_writer;
+use plugin_renderer_base;
+use report_overviewstats\chart;
 
+/**
+ * Overview statistics renderer.
+ *
+ * @package report_overviewstats
+ * @category output
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class renderer extends plugin_renderer_base {
     /**
      * Render the report charts
      *
-     * @see report_overviewstats_chart::get_content() for the expected structure
-     * @param array $charts list of {@link report_overviewstats_chart} instances
+     * @param \stdClass|null $course
+     * @param int $groupid id of the group to filter the course-level report by, or 0 for all participants
      * @return string
      */
-    public function charts($course) {
+    public function charts($course, $groupid = 0) {
         $chartsdata = [];
         if (is_null($course)) {
-            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_logins();
-            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_countries();
-            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_langs();
-            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_courses();
+            $chartsdata[] = chart::logins();
+            $chartsdata[] = chart::countries();
+            $chartsdata[] = chart::langs();
+            $chartsdata[] = chart::courses();
         } else {
-            $chartsdata[] = report_overviewstats_chart::report_overviewstats_chart_enrolments($course);
+            $chartsdata[] = chart::access($course, $groupid);
+            $chartsdata[] = chart::enrolments($course, $groupid);
         }
 
         $outlist = '';
         $outbody = '';
 
         $counter = 0;
-        foreach ($chartsdata as $chart) {
-            foreach ($chart as $title => $content) {
+        foreach ($chartsdata as $chartdata) {
+            foreach ($chartdata as $title => $content) {
                 $counter++;
                 $outlist .= html_writer::tag('li', html_writer::link('#chart_seq_' . $counter, s($title)));
                 $outbody .= html_writer::start_div('chart', ['id' => 'chart_seq_' . $counter]);
@@ -78,6 +75,9 @@ class report_overviewstats_renderer extends plugin_renderer_base {
         }
 
         $out = $this->output->header();
+        if (!is_null($course) && groups_get_course_groupmode($course) != NOGROUPS) {
+            $out .= groups_print_course_menu($course, $this->page->url, true);
+        }
         $out .= html_writer::start_tag('ul', ['class' => 'chartslist']);
         $out .= $outlist;
         $out .= html_writer::end_tag('ul');

@@ -14,34 +14,35 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * Privacy provider.
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
 namespace report_overviewstats\privacy;
- /**
-  * class for privacy api.
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
-class provider implements \core_privacy\local\metadata\null_provider {
 
+use core_privacy\local\metadata\collection;
+
+/**
+ * Privacy provider for report_overviewstats.
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class provider implements \core_privacy\local\metadata\provider {
     /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
+     * Returns metadata about the personal data this plugin reads.
      *
-     * @return  string
+     * This plugin stores no data of its own - it only reads data already
+     * owned and managed by other subsystems to build its charts.
+     *
+     * @param collection $collection The initialised collection to add items to.
+     * @return collection A listing of user data read through this system.
      */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
+    public static function get_metadata(collection $collection): collection {
+        $collection->link_subsystem('core_user', 'privacy:metadata:core_user');
+        $collection->link_subsystem('core_group', 'privacy:metadata:core_group');
+        $collection->link_subsystem('core_enrol', 'privacy:metadata:core_enrol');
+        $collection->add_plugintype_link('logstore', [], 'privacy:metadata:logstore');
+
+        return $collection;
     }
 }

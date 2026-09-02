@@ -14,24 +14,27 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * Displays some overview statistics for the site
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+/**
+ * Displays some overview statistics for the site
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 require(__DIR__ . '/../../config.php');
-require_once($CFG->libdir . '/adminlib.php');
 
 $courseid = optional_param('course', null, PARAM_INT);
 $course = null;
 
 if (is_null($courseid)) {
     // Site level reports.
+    // admin_externalpage_setup() is a procedural function, not a class, so Moodle's
+    // component autoloader can't lazily resolve it. Load adminlib.php only here,
+    // where it is actually needed, instead of unconditionally for every request.
+    require_once($CFG->libdir . '/adminlib.php');
     admin_externalpage_setup('overviewstats', '', null, '', ['pagelayout' => 'report']);
 } else {
     // Course level report.
@@ -47,8 +50,14 @@ if (is_null($courseid)) {
     $PAGE->set_pagelayout('report');
     $PAGE->set_title($course->shortname . ' - ' . get_string('pluginname', 'report_overviewstats'));
     $PAGE->set_heading($course->fullname . ' - ' . get_string('pluginname', 'report_overviewstats'));
+
+    // Groups not used in this course results in false, treat that the same as "all participants".
+    $groupid = groups_get_course_group($course, true);
+    if ($groupid === false) {
+        $groupid = 0;
+    }
 }
 
 $output = $PAGE->get_renderer('report_overviewstats');
 
-echo $output->charts($course);
+echo $output->charts($course, $groupid ?? 0);

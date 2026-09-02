@@ -1,0 +1,19 @@
+{
+  "name": "moodle-report_overviewstats",
+  "version": "1.7.0",
+  "private": true,
+  "description": "Local lint tooling for the report_overviewstats Moodle plugin",
+  "scripts": {
+    "lint": "grunt stylelint"
+  },
+  "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-stylelint": "^0.19.0",
+    "postcss-scss": "^4.0.9",
+    "stylelint": "^15.11.0",
+    "stylelint-csstree-validator": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=22.11.0 <23"
+  }
+}

@@ -1,0 +1,391 @@
+name: Moodle Plugin CI
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Moodle ${{ matrix.moodle-branch }} / PHP ${{ matrix.php }} / ${{ matrix.database }}
+    runs-on: ubuntu-24.04
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+      mariadb:
+        image: mariadb:11
+        env:
+          MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: '1'
+          MARIADB_CHARACTER_SET_SERVER: utf8mb4
+          MARIADB_COLLATION_SERVER: utf8mb4_unicode_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh
+          --connect
+          --innodb_initialized"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    strategy:
+      fail-fast: false
+
+      matrix:
+        include:
+          # Current Moodle development branch (5.3dev), the top of $plugin->supported
+          # in version.php.
+          - moodle-branch: main
+            php: '8.4'
+            database: pgsql
+
+          - moodle-branch: main
+            php: '8.4'
+            database: mariadb
+
+          # Moodle 5.2
+          - moodle-branch: MOODLE_502_STABLE
+            php: '8.4'
+            database: pgsql
+
+          - moodle-branch: MOODLE_502_STABLE
+            php: '8.4'
+            database: mariadb
+
+          # Moodle 5.1
+          - moodle-branch: MOODLE_501_STABLE
+            php: '8.3'
+            database: pgsql
+
+          - moodle-branch: MOODLE_501_STABLE
+            php: '8.3'
+            database: mariadb
+
+          # Moodle 5.0, the plugin's declared minimum (see $plugin->requires in version.php).
+          - moodle-branch: MOODLE_500_STABLE
+            php: '8.3'
+            database: pgsql
+
+          - moodle-branch: MOODLE_500_STABLE
+            php: '8.3'
+            database: mariadb
+
+    steps:
+      # ---------------------------------------------------------
+      # Checkout
+      # ---------------------------------------------------------
+
+      # DualCube Moodle plugin repos are named "moodle-<component>" by convention
+      # (moodle-auth_moowoodle, moodle-local_x, moodle-mod_x, ...); stripping just
+      # the "moodle-" prefix leaves the real frankenstyle component name
+      # (auth_moowoodle, local_x, mod_x, ...) as the checkout folder, which works
+      # for every plugin type without hardcoding one here - moodle-plugin-ci
+      # doesn't care what the folder is named, it reads the real component from
+      # the plugin's own version.php.
+      - name: Determine plugin slug
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          echo "PLUGIN_SLUG=${REPO_NAME#moodle-}" >> "$GITHUB_ENV"
+
+      - name: Checkout plugin
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.PLUGIN_SLUG }}
+          persist-credentials: false
+
+      # ---------------------------------------------------------
+      # PHP
+      # ---------------------------------------------------------
+
+      - name: Setup PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, intl, soap, curl, gd, xml, json, zip, pdo, pdo_mysql, pgsql, pdo_pgsql
+          ini-values: max_input_vars=5000
+          coverage: none
+
+      # moodle-plugin-ci's Mustache Lint step shells out to a Java-based HTML
+      # validator (vnu.jar) to check each template's rendered output. Without
+      # an explicit setup, whether a working `java` ends up on PATH depends on
+      # undocumented runner-image defaults - set up a known-good JDK instead
+      # of relying on that.
+      - name: Setup Java (for Mustache Lint's HTML validator)
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # ---------------------------------------------------------
+      # System dependencies
+      # ---------------------------------------------------------
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git \
+            unzip \
+            mariadb-client \
+            postgresql-client
+
+      - name: Configure locale
+        run: sudo locale-gen en_AU.UTF-8
+
+      - name: Configure Node
+        run: echo "NVM_DIR=$HOME/.nvm" >> $GITHUB_ENV
+
+      # Note: tests/ and phpunit.xml must NOT be removed here - the PHPUnit and
+      # Behat steps below run against this same checkout, and need them.
+      - name: Clean extra files from plugin
+        run: |
+          rm -rf "$PLUGIN_SLUG/.git" "$PLUGIN_SLUG/.github" "$PLUGIN_SLUG/node_modules" "$PLUGIN_SLUG/vendor"
+          rm -f "$PLUGIN_SLUG"/composer.* "$PLUGIN_SLUG/webpack.config.js" "$PLUGIN_SLUG/.zipignore"
+
+      # ---------------------------------------------------------
+      # Moodle Plugin CI
+      # ---------------------------------------------------------
+
+      - name: Install moodle-plugin-ci tooling
+        run: |
+          composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci 4.5.11
+          echo "$(cd ci/bin; pwd)" >> $GITHUB_PATH
+          echo "$(cd ci/vendor/bin; pwd)" >> $GITHUB_PATH
+        env:
+          COMPOSER_NO_INTERACTION: 1
+
+      # ---------------------------------------------------------
+      # Install Moodle + plugin
+      # ---------------------------------------------------------
+
+      - name: Install Moodle
+        env:
+          DB: ${{ matrix.database }}
+          MOODLE_BRANCH: ${{ matrix.moodle-branch }}
+        run: moodle-plugin-ci install --plugin "./$PLUGIN_SLUG" --db-host=127.0.0.1
+
+      # ---------------------------------------------------------
+      # PHP syntax
+      # ---------------------------------------------------------
+
+      - name: PHP Lint
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phplint "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # Moodle Coding Standards
+      # ---------------------------------------------------------
+
+      - name: Moodle Code Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpcs --max-warnings 0 "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # PHPDoc
+      # ---------------------------------------------------------
+
+      - name: Moodle PHPDoc Checker
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpdoc --max-warnings 0 "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # PHP Mess Detector
+      # ---------------------------------------------------------
+
+      - name: PHP Mess Detector
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        run: moodle-plugin-ci phpmd "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # Mustache templates
+      # ---------------------------------------------------------
+
+      - name: Mustache Lint
+        if: ${{ !cancelled() }}
+        # No explicit plugin path here (unlike the other steps): mustache lint
+        # renders templates through Moodle's own component/HTML-validator
+        # machinery, which requires the plugin's actual in-Moodle-tree
+        # location, not this checkout's original path. moodle-plugin-ci's
+        # `install` step already recorded that correct path in PLUGIN_DIR
+        # (loaded automatically from ci/.env on every invocation), so passing
+        # our own path here would override it with the wrong one.
+        run: moodle-plugin-ci mustache
+
+      # ---------------------------------------------------------
+      # JavaScript / AMD
+      # ---------------------------------------------------------
+
+      - name: Grunt
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci grunt --max-lint-warnings 0
+
+      # ---------------------------------------------------------
+      # Plugin validation
+      # ---------------------------------------------------------
+
+      - name: Validate Plugin
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci validate "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # Database upgrade/savepoint checks
+      # ---------------------------------------------------------
+
+      - name: Check Upgrade Savepoints
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci savepoints "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # PHPUnit
+      # ---------------------------------------------------------
+
+      - name: PHPUnit Tests
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci phpunit --fail-on-warning "$PLUGIN_SLUG"
+
+      # ---------------------------------------------------------
+      # Behat
+      # ---------------------------------------------------------
+
+      - name: Run Behat Tests
+        id: behat
+        if: ${{ !cancelled() }}
+        run: moodle-plugin-ci behat --profile chrome --scss-deprecations "$PLUGIN_SLUG"
+
+      - name: Upload Behat Faildump (if failed)
+        if: ${{ failure() && steps.behat.outcome == 'failure' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Behat Faildump (${{ matrix.moodle-branch }}, ${{ matrix.php }}, ${{ matrix.database }})
+          path: ${{ github.workspace }}/moodledata/behat_dump
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Mark cancelled jobs as failed
+        if: ${{ cancelled() }}
+        run: exit 1
+
+  # Releases are explicit and manual: run "Run workflow" on this workflow (choosing
+  # the branch/commit to release from) once CI is green. This intentionally replaces
+  # a commit-message sniff ("Merge pull request"), which silently skips releasing on
+  # squash merges, rebase merges, manually pushed commits, or non-default merge
+  # settings - all of which produce a passing `test` job but no matching commit text.
+  create_tag_and_release:
+    runs-on: ubuntu-24.04
+    needs: test
+    if: github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: write
+    steps:
+      - name: Determine plugin slug
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          echo "PLUGIN_SLUG=${REPO_NAME#moodle-}" >> "$GITHUB_ENV"
+
+      - name: Checkout plugin
+        uses: actions/checkout@v6
+        with:
+          path: ${{ env.PLUGIN_SLUG }}
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+
+      - name: Prepare Release Folder
+        run: |
+          rm -rf "$PLUGIN_SLUG/.git"
+          mkdir -p release
+
+      - name: Verify exclude list
+        run: |
+          if [ ! -f "$PLUGIN_SLUG/exclude.lst" ]; then
+            echo "ERROR: $PLUGIN_SLUG/exclude.lst not found"
+            exit 1
+          fi
+
+      # version.php's $plugin->version is what Moodle itself treats as this
+      # plugin's authoritative version - it's bumped on every real release.
+      - name: Get version from version.php
+        id: version
+        working-directory: ${{ env.PLUGIN_SLUG }}
+        run: |
+          VERSION=$(sed -n 's/^[[:space:]]*\$plugin->version[[:space:]]*=[[:space:]]*\([0-9]\+\)[[:space:]]*;.*/\1/p' version.php | head -n 1)
+
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: Could not determine plugin version from version.php"
+            exit 1
+          fi
+
+          echo "Plugin version: $VERSION"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Build ZIP
+        run: |
+          zip -r "release/$PLUGIN_SLUG.zip" "$PLUGIN_SLUG" \
+            -x@"$PLUGIN_SLUG/exclude.lst"
+
+      # Guards against a bad exclude.lst silently shipping a broken or empty
+      # zip: confirms the archive itself isn't corrupt, and that the plugin's
+      # own version.php - the file Moodle reads to identify and install it -
+      # actually made it in at the expected component path.
+      - name: Verify Release ZIP
+        run: |
+          ZIP="release/$PLUGIN_SLUG.zip"
+
+          unzip -t "$ZIP"
+
+          unzip -l "$ZIP" | grep -q "$PLUGIN_SLUG/version.php" || {
+            echo "ERROR: version.php missing from release ZIP"
+            exit 1
+          }
+
+          echo "Release ZIP verified successfully."
+
+      - name: Determine release date
+        id: reldate
+        run: |
+          DAY=$(date -u +%-d)
+          case $DAY in
+            1|21|31) SUFFIX="st" ;;
+            2|22) SUFFIX="nd" ;;
+            3|23) SUFFIX="rd" ;;
+            *) SUFFIX="th" ;;
+          esac
+          echo "date=${DAY}${SUFFIX} $(date -u +'%B %Y')" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          files: release/${{ env.PLUGIN_SLUG }}.zip
+          body: |
+            We're pleased to announce the official release of Moodle Overview statistics report v${{ steps.version.outputs.version }}.
+
+            Thank you for using our plugin and for being part of the Moodle community.
+
+            Release Information
+
+            Version: v${{ steps.version.outputs.version }}
+            Release: Official
+            Date: ${{ steps.reldate.outputs.date }}
+
+            Thank you for choosing our plugin. We appreciate your continued support!
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

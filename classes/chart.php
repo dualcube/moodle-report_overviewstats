@@ -14,40 +14,34 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * plugin overviewstats
-  *
-  * @package report_overviewstats
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+namespace report_overviewstats;
 
-  /**
-   * Base class for all charts to be reported
-   *
-   * @package report_overviewstats
-   * @author DualCube <admin@dualcube.com>
-   * @copyright 2023 DualCube <admin@dualcube.com>
-   * @copyright based on work by 2013 David Mudrak <david@moodle.com>
-   * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-   */
-class report_overviewstats_chart {
+/**
+ * Base class for all charts to be reported.
+ *
+ * @package report_overviewstats
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class chart {
     /**
      * create login for login chart
      *
      * @return array
      */
-    public static function report_overviewstats_chart_logins() {
+    public static function logins() {
         $maindata = self::prepare_data_login_parday_chart();
         $title = get_string('chart-logins', 'report_overviewstats');
         $titleperday = get_string('chart-logins-perday', 'report_overviewstats');
 
         return [
             $title => [
-                $titleperday => html_writer::tag('div',
-                    self::get_chart(new \core\chart_line(),
+                $titleperday => \html_writer::tag(
+                    'div',
+                    self::get_chart(
+                        new \core\chart_line(),
                         get_string('user-numbers', 'report_overviewstats'),
                         $maindata['loggedins'],
                         $maindata['dates'],
@@ -70,7 +64,7 @@ class report_overviewstats_chart {
      * @return array
      */
     protected static function prepare_data_login_parday_chart() {
-        global $DB, $CFG;
+        global $CFG;
 
         $now = strtotime('today midnight');
         $lastmonth = [];
@@ -115,14 +109,19 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_countries() {
+    public static function countries() {
         $maindata = self::prepare_data_chart_countries();
         $title = get_string('chart-countries', 'report_overviewstats');
-        $info = html_writer::div(
-            get_string('chart-countries-info',
-            'report_overviewstats', count($maindata['counts'])),
-            'chartinfo');
-        $chart = html_writer::tag('div',
+        $info = \html_writer::div(
+            get_string(
+                'chart-countries-info',
+                'report_overviewstats',
+                count($maindata['counts'])
+            ),
+            'chartinfo'
+        );
+        $chart = \html_writer::tag(
+            'div',
             self::get_chart(
                 new \core\chart_bar(),
                 get_string('user-numbers', 'report_overviewstats'),
@@ -176,12 +175,13 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_langs() {
+    public static function langs() {
         $maindata = self::prepare_data_chart_langs();
 
         $title = get_string('chart-langs', 'report_overviewstats');
-        $info = html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($maindata['counts'])), 'chartinfo');
-        $chart = html_writer::tag('div',
+        $info = \html_writer::div(get_string('chart-langs-info', 'report_overviewstats', count($maindata['counts'])), 'chartinfo');
+        $chart = \html_writer::tag(
+            'div',
             self::get_chart(
                 new \core\chart_bar(),
                 get_string('user-numbers', 'report_overviewstats'),
@@ -235,7 +235,7 @@ class report_overviewstats_chart {
      *
      * @return array
      */
-    public static function report_overviewstats_chart_courses() {
+    public static function courses() {
         global $OUTPUT;
 
         $maindata = self::prepare_data_chart_courses();
@@ -243,33 +243,38 @@ class report_overviewstats_chart {
         $title = get_string('chart-courses', 'report_overviewstats');
         $titlepercategory = get_string('chart-courses-percategory', 'report_overviewstats');
 
-        $percategorydata = new html_table();
+        $percategorydata = new \html_table();
         $percategorydata->head = [
             get_string('chart-courses-percategory-categoryname', 'report_overviewstats'),
             get_string('chart-courses-percategory-coursesrecursive', 'report_overviewstats'),
             get_string('chart-courses-percategory-coursesown', 'report_overviewstats'),
         ];
         foreach ($maindata['percategory'] as $catdata) {
-            $percategorydata->data[] = new html_table_row([
+            $percategorydata->data[] = new \html_table_row([
                 $catdata['categoryname'],
                 $catdata['coursesrecursive'],
                 $catdata['coursesown'],
             ]);
         }
 
-        $titlesizes = sprintf('%s %s', get_string('chart-courses-sizes', 'report_overviewstats'),
-            $OUTPUT->help_icon('chart-courses-sizes', 'report_overviewstats'));
+        $titlesizes = sprintf(
+            '%s %s',
+            get_string('chart-courses-sizes', 'report_overviewstats'),
+            $OUTPUT->help_icon('chart-courses-sizes', 'report_overviewstats')
+        );
 
         return [
             $title => [
-                $titlepercategory => html_writer::tag('div',
-                    html_writer::table($percategorydata),
+                $titlepercategory => \html_writer::tag(
+                    'div',
+                    \html_writer::table($percategorydata),
                     [
                         'id' => 'chart_courses_percategory',
                         'class' => 'simple_data_table',
                     ],
                 ),
-                $titlesizes => html_writer::tag('div',
+                $titlesizes => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_bar(),
                         get_string('course-numbers', 'report_overviewstats'),
@@ -297,12 +302,12 @@ class report_overviewstats_chart {
         global $DB;
         $maindata = [];
         // Number of courses per category.
-        $categorieslist = core_course_category::make_categories_list();
+        $categorieslist = \core_course_category::make_categories_list();
         $maindata['percategory'] = [];
         $total = 0;
 
         foreach ($categorieslist as $catid => $catname) {
-            $cat = core_course_category::get($catid);
+            $cat = \core_course_category::get($catid);
             $coursesown = $cat->get_courses_count();
             $total += $coursesown;
             $maindata['percategory'][] = [
@@ -313,9 +318,9 @@ class report_overviewstats_chart {
         }
 
         $maindata['percategory'][] = [
-            'categoryname' => html_writer::tag('strong', get_string('total')),
+            'categoryname' => \html_writer::tag('strong', get_string('total')),
             'coursesrecursive' => '',
-            'coursesown' => html_writer::tag('strong', $total),
+            'coursesown' => \html_writer::tag('strong', $total),
         ];
 
         // Distribution graph of number of activities per course.
@@ -354,9 +359,104 @@ class report_overviewstats_chart {
         ksort($data);
 
         foreach ($data as $distributiongroup => $courses) {
-            $distributiongroupname = sprintf("%d-%d", $distributiongroup * 5, $distributiongroup * 5 + 4);
-            $maindata['sizes']['course_size'][] = $distributiongroupname;
+            $sizelabel = sprintf("%d-%d", $distributiongroup * 5, $distributiongroup * 5 + 4);
+            $maindata['sizes']['course_size'][] = $sizelabel;
             $maindata['sizes']['courses'][] = $courses;
+        }
+
+        return $maindata;
+    }
+
+    /**
+     * create course access chart
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return array
+     */
+    public static function access($course, $groupid = 0) {
+        $maindata = self::prepare_data_course_access_parday_chart($course, $groupid);
+
+        if ($groupid) {
+            $title = get_string('chart-access-group', 'report_overviewstats', groups_get_group_name($groupid));
+        } else {
+            $title = get_string('chart-access', 'report_overviewstats');
+        }
+        $titleperday = get_string('chart-access-perday', 'report_overviewstats');
+
+        return [
+            $title => [
+                $titleperday => \html_writer::tag(
+                    'div',
+                    self::get_chart(
+                        new \core\chart_line(),
+                        get_string('user-numbers', 'report_overviewstats'),
+                        $maindata['accessed'],
+                        $maindata['dates'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_access_perday',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                        'dir' => 'ltr',
+                    ]
+                ),
+            ],
+        ];
+    }
+
+    /**
+     * prepare data for the course access per day chart
+     *
+     * Counts unique registered users (not visits) who viewed the course each day,
+     * derived from \core\event\course_viewed log entries.
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return array
+     */
+    protected static function prepare_data_course_access_parday_chart($course, $groupid = 0) {
+        $now = strtotime('today midnight');
+        $lastmonth = [];
+        for ($i = 30; $i >= 0; $i--) {
+            $lastmonth[$now - $i * DAYSECS] = [];
+        }
+
+        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
+
+        $logmanger = get_log_manager();
+        $readers = $logmanger->get_readers('\core\log\sql_reader');
+        $reader = reset($readers);
+        $select = "component = :component AND eventname = :eventname AND courseid = :courseid AND timecreated >= :timestart";
+        $params = [
+            'component' => 'core',
+            'eventname' => '\core\event\course_viewed',
+            'courseid' => $course->id,
+            'timestart' => $now - 30 * DAYSECS,
+        ];
+        $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+
+        foreach ($recordset as $record) {
+            if ($groupid && !isset($groupmemberids[$record->userid])) {
+                continue;
+            }
+            foreach (array_reverse($lastmonth, true) as $timestamp => $accessed) {
+                if ($record->timecreated >= $timestamp) {
+                    $lastmonth[$timestamp][$record->userid] = true;
+                    break;
+                }
+            }
+        }
+
+        $maindata = [
+            'dates' => [],
+            'accessed' => [],
+        ];
+        $format = get_string('strftimedateshort', 'core_langconfig');
+        foreach ($lastmonth as $timestamp => $accessed) {
+            $maindata['dates'][] = userdate($timestamp, $format);
+            $maindata['accessed'][] = count($accessed);
         }
 
         return $maindata;
@@ -365,18 +465,25 @@ class report_overviewstats_chart {
     /**
      * create enrolment chart
      *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
      * @return array
      */
-    public static function report_overviewstats_chart_enrolments($course) {
-        $maindata = self::prepare_data_chart_enrollments($course);
+    public static function enrolments($course, $groupid = 0) {
+        $maindata = self::prepare_data_chart_enrollments($course, $groupid);
 
-        $title = get_string('chart-enrolments', 'report_overviewstats');
+        if ($groupid) {
+            $title = get_string('chart-enrolments-group', 'report_overviewstats', groups_get_group_name($groupid));
+        } else {
+            $title = get_string('chart-enrolments', 'report_overviewstats');
+        }
         $titlemonth = get_string('chart-enrolments-month', 'report_overviewstats');
         $titleyear = get_string('chart-enrolments-year', 'report_overviewstats');
 
         return [
             $title => [
-                $titlemonth => html_writer::tag('div',
+                $titlemonth => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_line(),
                         get_string('enrolled', 'report_overviewstats'),
@@ -390,7 +497,8 @@ class report_overviewstats_chart {
                         'style' => 'min-height: 300px;',
                     ]
                 ),
-                $titleyear => html_writer::tag('div',
+                $titleyear => \html_writer::tag(
+                    'div',
                     self::get_chart(
                         new \core\chart_line(),
                         get_string('enrolled', 'report_overviewstats'),
@@ -411,123 +519,163 @@ class report_overviewstats_chart {
     /**
      * prepare chart enrolments data
      *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
      * @return array
      */
-    protected static function prepare_data_chart_enrollments($course) {
-        global $DB, $CFG;
-
+    protected static function prepare_data_chart_enrollments($course, $groupid = 0) {
         if (is_null($course)) {
-            throw new coding_exception(get_string('null-course-exception', 'report_overviewstats'));
+            throw new \coding_exception(get_string('null-course-exception', 'report_overviewstats'));
         }
 
-        // Get the number of currently enrolled users.
+        $current = self::get_current_enrolment_count($course, $groupid);
+        $now = usergetmidnight(time(), \core_date::get_user_timezone());
 
-        $context = context_course::instance($course->id);
-        list($esql, $params) = get_enrolled_sql($context);
+        // Don't extend the graphs further back than the course itself started.
+        $coursestart = usergetmidnight(max($course->startdate, 0), \core_date::get_user_timezone());
+        $dayssincestart = max(0, (int) floor(($now - $coursestart) / DAYSECS));
+        $monthssincestart = max(0, (int) floor(($now - $coursestart) / (30 * DAYSECS)));
+
+        $lastmonth = self::build_enrolment_baseline($now, DAYSECS, min(30, $dayssincestart), $current);
+        $lastyear = self::build_enrolment_baseline($now, 30 * DAYSECS, min(12, $monthssincestart), $current);
+
+        // The log-based delta below can only attribute an enrol/unenrol event
+        // to a group using the affected user's CURRENT group membership,
+        // since historical membership isn't recorded - this is consistent
+        // with the rest of this method already projecting today's numbers
+        // backwards using the log records, rather than tracking exact history.
+        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
+
+        $eventsfrom = max($now - 360 * DAYSECS, $coursestart);
+        foreach (self::get_enrolment_events($course, $eventsfrom) as $event) {
+            if ($groupid && !isset($groupmemberids[$event->relateduserid])) {
+                continue;
+            }
+            self::apply_enrolment_delta($lastmonth, $event);
+            self::apply_enrolment_delta($lastyear, $event);
+        }
+
+        return [
+            'lastmonth' => self::format_enrolment_series($lastmonth),
+            'lastyear' => self::format_enrolment_series($lastyear),
+        ];
+    }
+
+    /**
+     * get the number of currently enrolled users
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return int
+     */
+    protected static function get_current_enrolment_count($course, $groupid) {
+        global $DB;
+
+        $context = \context_course::instance($course->id);
+        [$esql, $params] = get_enrolled_sql($context, '', $groupid);
         $sql = "SELECT COUNT(u.id)
                   FROM {user} u
                   JOIN ($esql) je ON je.id = u.id
                  WHERE u.deleted = 0";
 
-        $current = $DB->count_records_sql($sql, $params);
+        return $DB->count_records_sql($sql, $params);
+    }
 
-        // Construct the estimated number of enrolled users in the last month
-        // and the last year using the current number and the log records.
-
-        $now = usergetmidnight(time(),core_date::get_user_timezone());
-
-        $lastmonth = [];
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = $current;
+    /**
+     * build a series of timestamp => initial value pairs, going back from $now
+     *
+     * @param int $now the most recent timestamp in the series
+     * @param int $step seconds between each series entry
+     * @param int $count number of steps to go back
+     * @param int $initial value to seed every entry with
+     * @return array
+     */
+    protected static function build_enrolment_baseline($now, $step, $count, $initial) {
+        $series = [];
+        for ($i = $count; $i >= 0; $i--) {
+            $series[$now - $i * $step] = $initial;
         }
+        return $series;
+    }
 
-        $lastyear = [];
-        for ($i = 12; $i >= 0; $i--) {
-            $lastyear[$now - $i * 30 * DAYSECS] = $current;
-        }
-
-        // Fetch all the enrol/unrol log entries from the last year.
+    /**
+     * fetch all the enrol/unenrol log entries for the course since $since
+     *
+     * @param \stdClass $course
+     * @param int $since only fetch events at or after this timestamp
+     * @return \Iterator
+     */
+    protected static function get_enrolment_events($course, $since) {
         $logmanger = get_log_manager();
         $readers = $logmanger->get_readers('\core\log\sql_reader');
         $reader = reset($readers);
-        $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) ".
+        $select = "component = :component AND (eventname = :eventname1 OR eventname = :eventname2) " .
         "AND timecreated >= :timestart AND courseid = :courseid";
         $params = [
             'component' => 'core',
             'eventname1' => '\core\event\user_enrolment_created',
             'eventname2' => '\core\event\user_enrolment_deleted',
-            'timestart' => $now - 360 * DAYSECS,
+            'timestart' => $since,
             'courseid' => $course->id,
         ];
-        $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        return $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+    }
 
-        foreach ($events as $event) {
-            foreach (array_reverse($lastmonth, true) as $key => $value) {
-                if ($event->timecreated >= $key + DAYSECS) {
-                    // We need to amend all days up to the key.
-                    foreach ($lastmonth as $mkey => $mvalue) {
-                        if ($mkey <= $key) {
-                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastmonth[$mkey] > 0) {
-                                $lastmonth[$mkey]--;
-                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                $lastmonth[$mkey]++;
-                            }
-                        }
-                    }
-                    break;
+    /**
+     * amend a lastmonth/lastyear series in place for a single enrol/unenrol event
+     *
+     * @param array $series timestamp => enrolled count, amended in place
+     * @param \stdClass $event
+     * @return void
+     */
+    protected static function apply_enrolment_delta(array &$series, $event) {
+        foreach (array_reverse(array_keys($series)) as $key) {
+            if ($event->timecreated < $key + DAYSECS) {
+                continue;
+            }
+            // We need to amend all entries up to the key.
+            foreach (array_keys($series) as $entrykey) {
+                if ($entrykey > $key) {
+                    continue;
+                }
+                if ($event->eventname === '\core\event\user_enrolment_created' && $series[$entrykey] > 0) {
+                    $series[$entrykey]--;
+                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                    $series[$entrykey]++;
                 }
             }
-            foreach (array_reverse($lastyear, true) as $key => $value) {
-                if ($event->timecreated >= $key + DAYSECS) {
-                    // We need to amend all months up to the key.
-                    foreach ($lastyear as $ykey => $yvalue) {
-                        if ($ykey <= $key) {
-                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastyear[$ykey] > 0) {
-                                $lastyear[$ykey]--;
-                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                $lastyear[$ykey]++;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            return;
         }
+    }
 
-        $maindata = [
-            'lastmonth' => [
-                'date' => [],
-                'enrolled' => [],
-            ],
-            'lastyear' => [
-                'date' => [],
-                'enrolled' => [],
-            ],
+    /**
+     * convert a timestamp => enrolled series into date/enrolled arrays for the chart
+     *
+     * @param array $series timestamp => enrolled count
+     * @return array
+     */
+    protected static function format_enrolment_series(array $series) {
+        $formatted = [
+            'date' => [],
+            'enrolled' => [],
         ];
-
         $format = get_string('strftimedateshort', 'core_langconfig');
-        foreach ($lastmonth as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $maindata['lastmonth']['date'][] = $date;
-            $maindata['lastmonth']['enrolled'][] = $enrolled;
+        foreach ($series as $timestamp => $enrolled) {
+            $formatted['date'][] = userdate($timestamp, $format);
+            $formatted['enrolled'][] = $enrolled;
         }
-        foreach ($lastyear as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $maindata['lastyear']['date'][] = $date;
-            $maindata['lastyear']['enrolled'][] = $enrolled;
-        }
-        return $maindata;
+        return $formatted;
     }
 
     /**
      * create chart function based on inputes
      *
-     * @param \core\chart_line $chart
+     * @param \core\chart_base $chart
      * @param string $seriesname
      * @param array $seriesdata
      * @param array $labelsdata
      * @param bool $ishorizontal
-     * @return chart
+     * @return string
      */
     protected static function get_chart($chart, $seriesname, $seriesdata, $labelsdata, $ishorizontal) {
         global $OUTPUT;
