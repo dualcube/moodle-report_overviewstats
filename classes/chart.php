@@ -64,7 +64,7 @@ class chart {
      * @return array
      */
     protected static function prepare_data_login_parday_chart() {
-        global $DB, $CFG;
+        global $CFG;
 
         $now = strtotime('today midnight');
         $lastmonth = [];
@@ -359,8 +359,8 @@ class chart {
         ksort($data);
 
         foreach ($data as $distributiongroup => $courses) {
-            $distributiongroupname = sprintf("%d-%d", $distributiongroup * 5, $distributiongroup * 5 + 4);
-            $maindata['sizes']['course_size'][] = $distributiongroupname;
+            $sizelabel = sprintf("%d-%d", $distributiongroup * 5, $distributiongroup * 5 + 4);
+            $maindata['sizes']['course_size'][] = $sizelabel;
             $maindata['sizes']['courses'][] = $courses;
         }
 
@@ -429,22 +429,15 @@ class chart {
      * @return array
      */
     protected static function prepare_data_chart_enrollments($course, $groupid = 0) {
-        global $DB, $CFG;
-
         if (is_null($course)) {
             throw new \coding_exception(get_string('null-course-exception', 'report_overviewstats'));
         }
 
-        // Get the number of currently enrolled users.
+        $current = self::get_current_enrolment_count($course, $groupid);
+        $now = usergetmidnight(time(), \core_date::get_user_timezone());
 
-        $context = \context_course::instance($course->id);
-        [$esql, $params] = get_enrolled_sql($context, '', $groupid);
-        $sql = "SELECT COUNT(u.id)
-                  FROM {user} u
-                  JOIN ($esql) je ON je.id = u.id
-                 WHERE u.deleted = 0";
-
-        $current = $DB->count_records_sql($sql, $params);
+        $lastmonth = self::build_enrolment_baseline($now, DAYSECS, 30, $current);
+        $lastyear = self::build_enrolment_baseline($now, 30 * DAYSECS, 12, $current);
 
         // The log-based delta below can only attribute an enrol/unenrol event
         // to a group using the affected user's CURRENT group membership,
@@ -453,22 +446,65 @@ class chart {
         // backwards using the log records, rather than tracking exact history.
         $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
 
-        // Construct the estimated number of enrolled users in the last month
-        // and the last year using the current number and the log records.
-
-        $now = usergetmidnight(time(), \core_date::get_user_timezone());
-
-        $lastmonth = [];
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = $current;
+        foreach (self::get_enrolment_events($course, $now) as $event) {
+            if ($groupid && !isset($groupmemberids[$event->relateduserid])) {
+                continue;
+            }
+            self::apply_enrolment_delta($lastmonth, $event);
+            self::apply_enrolment_delta($lastyear, $event);
         }
 
-        $lastyear = [];
-        for ($i = 12; $i >= 0; $i--) {
-            $lastyear[$now - $i * 30 * DAYSECS] = $current;
-        }
+        return [
+            'lastmonth' => self::format_enrolment_series($lastmonth),
+            'lastyear' => self::format_enrolment_series($lastyear),
+        ];
+    }
 
-        // Fetch all the enrol/unrol log entries from the last year.
+    /**
+     * get the number of currently enrolled users
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return int
+     */
+    protected static function get_current_enrolment_count($course, $groupid) {
+        global $DB;
+
+        $context = \context_course::instance($course->id);
+        [$esql, $params] = get_enrolled_sql($context, '', $groupid);
+        $sql = "SELECT COUNT(u.id)
+                  FROM {user} u
+                  JOIN ($esql) je ON je.id = u.id
+                 WHERE u.deleted = 0";
+
+        return $DB->count_records_sql($sql, $params);
+    }
+
+    /**
+     * build a series of timestamp => initial value pairs, going back from $now
+     *
+     * @param int $now the most recent timestamp in the series
+     * @param int $step seconds between each series entry
+     * @param int $count number of steps to go back
+     * @param int $initial value to seed every entry with
+     * @return array
+     */
+    protected static function build_enrolment_baseline($now, $step, $count, $initial) {
+        $series = [];
+        for ($i = $count; $i >= 0; $i--) {
+            $series[$now - $i * $step] = $initial;
+        }
+        return $series;
+    }
+
+    /**
+     * fetch all the enrol/unenrol log entries from the last year
+     *
+     * @param \stdClass $course
+     * @param int $now
+     * @return \Iterator
+     */
+    protected static function get_enrolment_events($course, $now) {
         $logmanger = get_log_manager();
         $readers = $logmanger->get_readers('\core\log\sql_reader');
         $reader = reset($readers);
@@ -481,67 +517,53 @@ class chart {
             'timestart' => $now - 360 * DAYSECS,
             'courseid' => $course->id,
         ];
-        $events = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        return $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+    }
 
-        foreach ($events as $event) {
-            if ($groupid && !isset($groupmemberids[$event->relateduserid])) {
+    /**
+     * amend a lastmonth/lastyear series in place for a single enrol/unenrol event
+     *
+     * @param array $series timestamp => enrolled count, amended in place
+     * @param \stdClass $event
+     * @return void
+     */
+    protected static function apply_enrolment_delta(array &$series, $event) {
+        foreach (array_reverse(array_keys($series)) as $key) {
+            if ($event->timecreated < $key + DAYSECS) {
                 continue;
             }
-            foreach (array_reverse($lastmonth, true) as $key => $value) {
-                if ($event->timecreated >= $key + DAYSECS) {
-                    // We need to amend all days up to the key.
-                    foreach ($lastmonth as $mkey => $mvalue) {
-                        if ($mkey <= $key) {
-                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastmonth[$mkey] > 0) {
-                                $lastmonth[$mkey]--;
-                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                $lastmonth[$mkey]++;
-                            }
-                        }
-                    }
-                    break;
+            // We need to amend all entries up to the key.
+            foreach (array_keys($series) as $entrykey) {
+                if ($entrykey > $key) {
+                    continue;
+                }
+                if ($event->eventname === '\core\event\user_enrolment_created' && $series[$entrykey] > 0) {
+                    $series[$entrykey]--;
+                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                    $series[$entrykey]++;
                 }
             }
-            foreach (array_reverse($lastyear, true) as $key => $value) {
-                if ($event->timecreated >= $key + DAYSECS) {
-                    // We need to amend all months up to the key.
-                    foreach ($lastyear as $ykey => $yvalue) {
-                        if ($ykey <= $key) {
-                            if ($event->eventname === '\core\event\user_enrolment_created' && $lastyear[$ykey] > 0) {
-                                $lastyear[$ykey]--;
-                            } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                                $lastyear[$ykey]++;
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
+            return;
         }
+    }
 
-        $maindata = [
-            'lastmonth' => [
-                'date' => [],
-                'enrolled' => [],
-            ],
-            'lastyear' => [
-                'date' => [],
-                'enrolled' => [],
-            ],
+    /**
+     * convert a timestamp => enrolled series into date/enrolled arrays for the chart
+     *
+     * @param array $series timestamp => enrolled count
+     * @return array
+     */
+    protected static function format_enrolment_series(array $series) {
+        $formatted = [
+            'date' => [],
+            'enrolled' => [],
         ];
-
         $format = get_string('strftimedateshort', 'core_langconfig');
-        foreach ($lastmonth as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $maindata['lastmonth']['date'][] = $date;
-            $maindata['lastmonth']['enrolled'][] = $enrolled;
+        foreach ($series as $timestamp => $enrolled) {
+            $formatted['date'][] = userdate($timestamp, $format);
+            $formatted['enrolled'][] = $enrolled;
         }
-        foreach ($lastyear as $timestamp => $enrolled) {
-            $date = userdate($timestamp, $format);
-            $maindata['lastyear']['date'][] = $date;
-            $maindata['lastyear']['enrolled'][] = $enrolled;
-        }
-        return $maindata;
+        return $formatted;
     }
 
     /**
