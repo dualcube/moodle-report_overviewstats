@@ -46,6 +46,7 @@ class renderer extends plugin_renderer_base {
             $chartsdata[] = chart::langs();
             $chartsdata[] = chart::courses();
         } else {
+            $chartsdata[] = chart::access($course, $groupid);
             $chartsdata[] = chart::enrolments($course, $groupid);
         }
 

@@ -28,6 +28,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Overview statistics';
+$string['chart-access'] = 'Course access';
+$string['chart-access-group'] = 'Course access ({$a})';
+$string['chart-access-perday'] = 'Per day';
 $string['chart-countries'] = 'User countries';
 $string['chart-countries-info'] = 'Number of different countries: {$a}';
 $string['chart-courses'] = 'Courses';
@@ -49,7 +52,7 @@ $string['overviewstats:view'] = 'View overview statistics';
 $string['privacy:metadata:core_enrol'] = 'The overview statistics plugin reads the number of currently enrolled users, via the core enrolment subsystem, to build the enrolments chart. It does not store this data itself.';
 $string['privacy:metadata:core_group'] = 'The overview statistics plugin reads group membership, via the core group subsystem, to filter the enrolments chart by group. It does not store this data itself.';
 $string['privacy:metadata:core_user'] = 'The overview statistics plugin reads user country and language fields, via the core user subsystem, to build the countries and languages charts. It does not store this data itself.';
-$string['privacy:metadata:logstore'] = 'The overview statistics plugin reads login and enrolment log events, via the installed log store, to build historical charts. It does not store this data itself.';
+$string['privacy:metadata:logstore'] = 'The overview statistics plugin reads login, course access, and enrolment log events, via the installed log store, to build historical charts. It does not store this data itself.';
 $string['user-numbers'] = 'Number of users';
 $string['course-numbers'] = 'Number of course';
 $string['enrolled'] = 'Enrolled';

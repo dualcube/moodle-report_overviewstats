@@ -368,6 +368,101 @@ class chart {
     }
 
     /**
+     * create course access chart
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return array
+     */
+    public static function access($course, $groupid = 0) {
+        $maindata = self::prepare_data_course_access_parday_chart($course, $groupid);
+
+        if ($groupid) {
+            $title = get_string('chart-access-group', 'report_overviewstats', groups_get_group_name($groupid));
+        } else {
+            $title = get_string('chart-access', 'report_overviewstats');
+        }
+        $titleperday = get_string('chart-access-perday', 'report_overviewstats');
+
+        return [
+            $title => [
+                $titleperday => \html_writer::tag(
+                    'div',
+                    self::get_chart(
+                        new \core\chart_line(),
+                        get_string('user-numbers', 'report_overviewstats'),
+                        $maindata['accessed'],
+                        $maindata['dates'],
+                        false
+                    ),
+                    [
+                        'id' => 'chart_access_perday',
+                        'class' => 'chartplaceholder',
+                        'style' => 'min-height: 300px;',
+                        'dir' => 'ltr',
+                    ]
+                ),
+            ],
+        ];
+    }
+
+    /**
+     * prepare data for the course access per day chart
+     *
+     * Counts unique registered users (not visits) who viewed the course each day,
+     * derived from \core\event\course_viewed log entries.
+     *
+     * @param \stdClass $course
+     * @param int $groupid id of the group to filter the report by, or 0 for all participants
+     * @return array
+     */
+    protected static function prepare_data_course_access_parday_chart($course, $groupid = 0) {
+        $now = strtotime('today midnight');
+        $lastmonth = [];
+        for ($i = 30; $i >= 0; $i--) {
+            $lastmonth[$now - $i * DAYSECS] = [];
+        }
+
+        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
+
+        $logmanger = get_log_manager();
+        $readers = $logmanger->get_readers('\core\log\sql_reader');
+        $reader = reset($readers);
+        $select = "component = :component AND eventname = :eventname AND courseid = :courseid AND timecreated >= :timestart";
+        $params = [
+            'component' => 'core',
+            'eventname' => '\core\event\course_viewed',
+            'courseid' => $course->id,
+            'timestart' => $now - 30 * DAYSECS,
+        ];
+        $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+
+        foreach ($recordset as $record) {
+            if ($groupid && !isset($groupmemberids[$record->userid])) {
+                continue;
+            }
+            foreach (array_reverse($lastmonth, true) as $timestamp => $accessed) {
+                if ($record->timecreated >= $timestamp) {
+                    $lastmonth[$timestamp][$record->userid] = true;
+                    break;
+                }
+            }
+        }
+
+        $maindata = [
+            'dates' => [],
+            'accessed' => [],
+        ];
+        $format = get_string('strftimedateshort', 'core_langconfig');
+        foreach ($lastmonth as $timestamp => $accessed) {
+            $maindata['dates'][] = userdate($timestamp, $format);
+            $maindata['accessed'][] = count($accessed);
+        }
+
+        return $maindata;
+    }
+
+    /**
      * create enrolment chart
      *
      * @param \stdClass $course
@@ -436,8 +531,13 @@ class chart {
         $current = self::get_current_enrolment_count($course, $groupid);
         $now = usergetmidnight(time(), \core_date::get_user_timezone());
 
-        $lastmonth = self::build_enrolment_baseline($now, DAYSECS, 30, $current);
-        $lastyear = self::build_enrolment_baseline($now, 30 * DAYSECS, 12, $current);
+        // Don't extend the graphs further back than the course itself started.
+        $coursestart = usergetmidnight(max($course->startdate, 0), \core_date::get_user_timezone());
+        $dayssincestart = max(0, (int) floor(($now - $coursestart) / DAYSECS));
+        $monthssincestart = max(0, (int) floor(($now - $coursestart) / (30 * DAYSECS)));
+
+        $lastmonth = self::build_enrolment_baseline($now, DAYSECS, min(30, $dayssincestart), $current);
+        $lastyear = self::build_enrolment_baseline($now, 30 * DAYSECS, min(12, $monthssincestart), $current);
 
         // The log-based delta below can only attribute an enrol/unenrol event
         // to a group using the affected user's CURRENT group membership,
@@ -446,7 +546,8 @@ class chart {
         // backwards using the log records, rather than tracking exact history.
         $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
 
-        foreach (self::get_enrolment_events($course, $now) as $event) {
+        $eventsfrom = max($now - 360 * DAYSECS, $coursestart);
+        foreach (self::get_enrolment_events($course, $eventsfrom) as $event) {
             if ($groupid && !isset($groupmemberids[$event->relateduserid])) {
                 continue;
             }
@@ -498,13 +599,13 @@ class chart {
     }
 
     /**
-     * fetch all the enrol/unenrol log entries from the last year
+     * fetch all the enrol/unenrol log entries for the course since $since
      *
      * @param \stdClass $course
-     * @param int $now
+     * @param int $since only fetch events at or after this timestamp
      * @return \Iterator
      */
-    protected static function get_enrolment_events($course, $now) {
+    protected static function get_enrolment_events($course, $since) {
         $logmanger = get_log_manager();
         $readers = $logmanger->get_readers('\core\log\sql_reader');
         $reader = reset($readers);
@@ -514,7 +615,7 @@ class chart {
             'component' => 'core',
             'eventname1' => '\core\event\user_enrolment_created',
             'eventname2' => '\core\event\user_enrolment_deleted',
-            'timestart' => $now - 360 * DAYSECS,
+            'timestart' => $since,
             'courseid' => $course->id,
         ];
         return $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
