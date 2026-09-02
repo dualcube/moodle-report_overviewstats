@@ -14,16 +14,16 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
- /**
-  * Provides a list of strings for the plugin
-  *
-  * @package report_overviewstats
-  * @category string
-  * @author DualCube <admin@dualcube.com>
-  * @copyright 2013 David Mudrak <david@moodle.com>
-  * @copyright 2023 DualCube <admin@dualcube.com>
-  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
-  */
+/**
+ * Provides a list of strings for the plugin
+ *
+ * @package report_overviewstats
+ * @category string
+ * @author DualCube <admin@dualcube.com>
+ * @copyright 2013 David Mudrak <david@moodle.com>
+ * @copyright 2023 DualCube <admin@dualcube.com>
+ * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 
 defined('MOODLE_INTERNAL') || die();
 
