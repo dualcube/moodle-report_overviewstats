@@ -23,8 +23,9 @@ use report_overviewstats\chart;
 /**
  * Overview statistics renderer.
  *
- * @category output
  * @package report_overviewstats
+ * @category output
+ * @author DualCube <admin@dualcube.com>
  * @copyright 2013 David Mudrak <david@moodle.com>
  * @copyright 2023 DualCube <admin@dualcube.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
