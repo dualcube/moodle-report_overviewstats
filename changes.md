@@ -1,26 +1,12 @@
-### v1.8.0 ###
+### v1.7.0 ###
 
+* Added - Declared support upto Moodle 5.3(dev).
 * Added - Support for displaying the course-level enrolments report per
   group (issue #22): a group selector now appears on the course report
   when the course uses groups, filtering the "Enrolled users" chart to
   the selected group.
-* Fixed - Restored David Mudrak's original `@copyright 2013` notice as its
-  own standalone line in every file's header, alongside DualCube's. It had
-  been replaced outright in a 2023 commit and only partially/informally
-  restored (as a "based on work by" note) shortly after; it's now a proper
-  second `@copyright` line per standard convention for derivative works.
-
-### v1.7.0 ###
-
-* Added - Declared support for Moodle 5.2.
-* Changed - Modernized code to current Moodle coding style: namespaced
-  `report_overviewstats\chart` (formerly the Frankenstyle-prefixed
-  `report_overviewstats_chart`) and moved the renderer to
-  `classes/output/renderer.php` as `report_overviewstats\output\renderer`.
-* Fixed - Minor coding style issues (short array destructuring, spacing,
-  duplicated file/class docblocks).
-* Fixed - All Moodle Code Checker (phpcs `moodle` standard) errors; the
-  plugin now passes `moodle-plugin-ci phpcs` cleanly.
+* Changed - Modernized code to current Moodle coding style.
+* Fixed - All Moodle Code Checker.
 
 ### v1.6.1 ###
 

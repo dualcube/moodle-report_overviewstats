@@ -1,4 +1,3 @@
-<?php
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -14,8 +13,15 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/* eslint-env node */
+
 /**
- * Provides version and release information
+ * Local Grunt tooling for report_overviewstats.
+ *
+ * Lints this plugin's CSS with the same rules Moodle core's own Gruntfile
+ * enforces (see .stylelintrc.json), so issues that moodle-plugin-ci's
+ * "grunt" CI step would flag can be caught locally without a full Moodle
+ * checkout.
  *
  * @package report_overviewstats
  * @author DualCube <admin@dualcube.com>
@@ -23,13 +29,20 @@
  * @copyright 2023 DualCube <admin@dualcube.com>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+module.exports = function(grunt) {
+    grunt.loadNpmTasks('grunt-stylelint');
 
-defined('MOODLE_INTERNAL') || die();
+    grunt.initConfig({
+        stylelint: {
+            css: {
+                options: {
+                    configFile: '.stylelintrc.json',
+                    quietDeprecationWarnings: true,
+                },
+                src: ['styles.css'],
+            },
+        },
+    });
 
-$plugin->version = 2026090200;
-$plugin->requires = 2025041400;
-// Tested against Moodle 5.0 through 5.3, including the 5.3dev branch (branches 500-530).
-$plugin->supported = [500, 530];
-$plugin->component = 'report_overviewstats';
-$plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.7.0 (Build: 2026090200)';
+    grunt.registerTask('default', ['stylelint']);
+};
