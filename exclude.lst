@@ -1,0 +1,8 @@
+*/.github/*
+*/.gitignore
+*/Gruntfile.js
+*/package.json
+*/package-lock.json
+*/.stylelintrc.json
+*/node_modules/*
+*/exclude.lst
