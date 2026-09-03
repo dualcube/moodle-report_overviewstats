@@ -67,41 +67,65 @@ class chart {
         global $CFG;
 
         $now = strtotime('today midnight');
-        $lastmonth = [];
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = [];
-        }
+        $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
+        $params = [
+            'component' => 'core',
+            'eventname' => '\core\event\user_loggedin',
+            'guestid' => $CFG->siteguest,
+            'timestart' => $now - 30 * DAYSECS,
+        ];
+
+        $result = self::count_unique_users_per_day($now, $select, $params);
+
+        return [
+            'dates' => $result['dates'],
+            'loggedins' => $result['counts'],
+        ];
+    }
+
+    /**
+     * count unique userids per day, over the last 30 days, from log events matching $select/$params
+     *
+     * Shared by the site-wide logins chart and the course access chart, which both need
+     * "how many distinct users triggered this event on each of the last 30 days".
+     *
+     * @param int $now today's midnight timestamp
+     * @param string $select SQL WHERE clause for get_events_select(), must filter to events carrying a userid
+     * @param array $params SQL parameters for $select
+     * @param array $groupmemberids optional userid => true map to restrict matches to, or empty for no restriction
+     * @return array ['dates' => string[], 'counts' => int[]]
+     */
+    protected static function count_unique_users_per_day($now, $select, array $params, array $groupmemberids = []) {
+        $buckets = array_fill_keys(
+            array_map(fn($daysago) => $now - $daysago * DAYSECS, range(30, 0, -1)),
+            []
+        );
+
         $logmanger = get_log_manager();
         $readers = $logmanger->get_readers('\core\log\sql_reader');
         $reader = reset($readers);
-        $params = ['component' => 'core',
-            'eventname' => '\core\event\user_loggedin',
-            'guestid' => $CFG->siteguest,
-            'timestart' => $now - 30 * DAYSECS, ];
-        $select = "component = :component AND eventname = :eventname AND userid <> :guestid AND timecreated >= :timestart";
-        $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        $records = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        if ($groupmemberids) {
+            $records = array_filter($records, fn($record) => isset($groupmemberids[$record->userid]));
+        }
 
-        foreach ($recordset as $record) {
-            foreach (array_reverse($lastmonth, true) as $timestamp => $loggedin) {
-                $date = usergetdate($timestamp);
-                if ($record->timecreated >= $timestamp) {
-                    $lastmonth[$timestamp][$record->userid] = true;
-                    break;
+        $bucketstarts = array_reverse(array_keys($buckets));
+        foreach ($records as $record) {
+            foreach ($bucketstarts as $bucketstart) {
+                if ($record->timecreated < $bucketstart) {
+                    continue;
                 }
+                $buckets[$bucketstart][$record->userid] = true;
+                break;
             }
         }
-        $maindata = [
-            'dates' => [],
-            'loggedins' => [],
-        ];
-        $format = get_string('strftimedateshort', 'core_langconfig');
-        foreach ($lastmonth as $timestamp => $loggedin) {
-            $date = userdate($timestamp, $format);
-            $maindata['dates'][] = $date;
-            $maindata['loggedins'][] = count($loggedin);
-        }
 
-        return $maindata;
+        $format = get_string('strftimedateshort', 'core_langconfig');
+
+        return [
+            'dates' => array_values(array_map(fn($timestamp) => userdate($timestamp, $format), array_keys($buckets))),
+            'counts' => array_values(array_map('count', $buckets)),
+        ];
     }
 
     /**
@@ -329,40 +353,25 @@ class chart {
               GROUP BY course";
 
         $recordset = $DB->get_recordset_sql($sql);
-
-        $max = 0;
-        $data = [];
-        $maindata['sizes'] = [
-            'course_size' => [],
-            'courses' => [],
-        ];
-
-        foreach ($recordset as $record) {
-            $distributiongroup = floor($record->modules / 5); // 0 for 0-4, 1 for 5-9, 2 for 10-14 etc.
-            if (!isset($data[$distributiongroup])) {
-                $data[$distributiongroup] = 1;
-            } else {
-                $data[$distributiongroup]++;
-            }
-            if ($distributiongroup > $max) {
-                $max = $distributiongroup;
-            }
-        }
-
+        $modulecounts = iterator_to_array($recordset, false);
         $recordset->close();
 
+        // 0 for 0-4 activities, 1 for 5-9, 2 for 10-14 etc.
+        $distributiongroups = array_map(fn($record) => (int) floor($record->modules / 5), $modulecounts);
+        $data = array_count_values($distributiongroups);
+        $max = max(array_merge([0], $distributiongroups));
         for ($i = 0; $i <= $max; $i++) {
-            if (!isset($data[$i])) {
-                $data[$i] = 0;
-            }
+            $data[$i] = $data[$i] ?? 0;
         }
         ksort($data);
 
-        foreach ($data as $distributiongroup => $courses) {
-            $sizelabel = sprintf("%d-%d", $distributiongroup * 5, $distributiongroup * 5 + 4);
-            $maindata['sizes']['course_size'][] = $sizelabel;
-            $maindata['sizes']['courses'][] = $courses;
-        }
+        $maindata['sizes'] = [
+            'course_size' => array_values(array_map(
+                fn($distributiongroup) => sprintf('%d-%d', $distributiongroup * 5, $distributiongroup * 5 + 4),
+                array_keys($data)
+            )),
+            'courses' => array_values($data),
+        ];
 
         return $maindata;
     }
@@ -418,16 +427,6 @@ class chart {
      */
     protected static function prepare_data_course_access_parday_chart($course, $groupid = 0) {
         $now = strtotime('today midnight');
-        $lastmonth = [];
-        for ($i = 30; $i >= 0; $i--) {
-            $lastmonth[$now - $i * DAYSECS] = [];
-        }
-
-        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
-
-        $logmanger = get_log_manager();
-        $readers = $logmanger->get_readers('\core\log\sql_reader');
-        $reader = reset($readers);
         $select = "component = :component AND eventname = :eventname AND courseid = :courseid AND timecreated >= :timestart";
         $params = [
             'component' => 'core',
@@ -435,31 +434,14 @@ class chart {
             'courseid' => $course->id,
             'timestart' => $now - 30 * DAYSECS,
         ];
-        $recordset = $reader->get_events_select($select, $params, 'timecreated DESC', 0, 0);
+        $groupmemberids = $groupid ? groups_get_members($groupid, 'u.id') : [];
 
-        foreach ($recordset as $record) {
-            if ($groupid && !isset($groupmemberids[$record->userid])) {
-                continue;
-            }
-            foreach (array_reverse($lastmonth, true) as $timestamp => $accessed) {
-                if ($record->timecreated >= $timestamp) {
-                    $lastmonth[$timestamp][$record->userid] = true;
-                    break;
-                }
-            }
-        }
+        $result = self::count_unique_users_per_day($now, $select, $params, $groupmemberids);
 
-        $maindata = [
-            'dates' => [],
-            'accessed' => [],
+        return [
+            'dates' => $result['dates'],
+            'accessed' => $result['counts'],
         ];
-        $format = get_string('strftimedateshort', 'core_langconfig');
-        foreach ($lastmonth as $timestamp => $accessed) {
-            $maindata['dates'][] = userdate($timestamp, $format);
-            $maindata['accessed'][] = count($accessed);
-        }
-
-        return $maindata;
     }
 
     /**
@@ -629,22 +611,22 @@ class chart {
      * @return void
      */
     protected static function apply_enrolment_delta(array &$series, $event) {
-        foreach (array_reverse(array_keys($series)) as $key) {
-            if ($event->timecreated < $key + DAYSECS) {
-                continue;
-            }
-            // We need to amend all entries up to the key.
-            foreach (array_keys($series) as $entrykey) {
-                if ($entrykey > $key) {
-                    continue;
-                }
-                if ($event->eventname === '\core\event\user_enrolment_created' && $series[$entrykey] > 0) {
-                    $series[$entrykey]--;
-                } else if ($event->eventname === '\core\event\user_enrolment_deleted') {
-                    $series[$entrykey]++;
-                }
-            }
+        $matchingkeys = array_filter(array_keys($series), fn($key) => $event->timecreated >= $key + DAYSECS);
+        if (!$matchingkeys) {
             return;
+        }
+        $key = max($matchingkeys);
+
+        // Amend all entries up to the key.
+        $targetkeys = array_filter(array_keys($series), fn($entrykey) => $entrykey <= $key);
+        foreach ($targetkeys as $entrykey) {
+            // Events are always created/deleted only (see get_enrolment_events()), so
+            // "not deleted" here is safe to treat as "created" without rechecking.
+            if ($event->eventname === '\core\event\user_enrolment_deleted') {
+                $series[$entrykey]++;
+            } else if ($series[$entrykey] > 0) {
+                $series[$entrykey]--;
+            }
         }
     }
 
