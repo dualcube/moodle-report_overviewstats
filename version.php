@@ -26,10 +26,10 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version = 2026090200;
+$plugin->version = 2026090300;
 $plugin->requires = 2025041400;
 // Tested against Moodle 5.0 through 5.3, including the 5.3dev branch (branches 500-530).
 $plugin->supported = [500, 530];
 $plugin->component = 'report_overviewstats';
 $plugin->maturity = MATURITY_STABLE;
-$plugin->release = '1.7.0 (Build: 2026090200)';
+$plugin->release = '1.7.0 (Build: 2026090300)';
